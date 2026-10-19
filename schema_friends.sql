@@ -65,3 +65,18 @@ drop policy if exists "announcements read" on public.announcements;
 drop policy if exists "announcements insert" on public.announcements;
 create policy "announcements read" on public.announcements for select to authenticated using (true);
 create policy "announcements insert" on public.announcements for insert to authenticated with check (auth.uid() = user_id);
+
+-- 4) 버그 제보: 로그인한 사람이 자기 이름으로 쓰고, 개발자(점검용)가 읽을 수 있도록 공개 읽기를 허용합니다. 개인정보는 적지 마세요.
+create table if not exists public.bug_reports (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  account     text not null,
+  text        text not null,
+  ctx         jsonb not null default '{}'::jsonb,
+  created_at  timestamptz not null default now()
+);
+alter table public.bug_reports enable row level security;
+drop policy if exists "bugs read" on public.bug_reports;
+drop policy if exists "bugs insert" on public.bug_reports;
+create policy "bugs read" on public.bug_reports for select to anon, authenticated using (true);
+create policy "bugs insert" on public.bug_reports for insert to authenticated with check (auth.uid() = user_id);

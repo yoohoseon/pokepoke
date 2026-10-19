@@ -364,6 +364,7 @@ details.adv[open] summary::after{content:"▴"}
       <button class="tab" role="tab" data-v="shop" aria-selected="false">상점</button>
       <button class="tab" role="tab" data-v="friends" aria-selected="false">친구<b id="newsDot" class="hidden" style="background:#e5383b;color:#fff;border-radius:50%;padding:0 6px;margin-left:5px;font-size:11px;line-height:16px;display:inline-block">!</b></button>
       <button class="tab" role="tab" data-v="log" aria-selected="false">기록</button>
+      <button class="tab" role="tab" data-v="settings" aria-selected="false">설정</button>
     </nav>
   </div>
 </header>
@@ -373,7 +374,7 @@ details.adv[open] summary::after{content:"▴"}
   <div class="ko">외노자가 되기 위한 모험</div>
   <div class="en">LANDING DAY QUEST</div>
   <div class="load" id="loadBar"><i id="loadFill" style="width:0%"></i></div>
-  <div class="small" id="loadMsg">포켓몬 151마리 불러오는 중…</div>
+  <div class="small" id="loadMsg">포켓몬 불러오는 중…</div>
   <div class="press hidden" id="pressStart">PRESS START</div>
 </div></div>
 <div class="ov hidden" id="loginOv"><div class="ov-in">
@@ -551,6 +552,35 @@ details.adv[open] summary::after{content:"▴"}
   </div>
   <div class="box stack" id="frNet"></div>
 </section>
+<section class="view hidden" id="v-settings">
+    <div class="box stack" id="bugBox">
+    <h2 style="font-size:16px">🐞 버그 제보</h2>
+    <div class="small muted">이상한 화면이나 틀린 문제를 알려 주세요. 제보는 한곳에 모아 두고 다음 업데이트 때 확인해서 고쳐요. 보낸 화면·기기 정보가 함께 저장돼요. (이름 외 개인정보는 적지 마세요)</div>
+    <textarea id="bugText" rows="3" maxlength="600" placeholder="어디서 어떤 문제가 있었는지 적어 주세요. 예) 파티 화면에서 이름 바꾸기를 눌렀는데 반응이 없어요" style="width:100%"></textarea>
+    <div class="row"><button class="btn primary" id="bugSend">제보 보내기</button><span class="small" id="bugMsg"></span></div>
+    <div class="small muted" id="bugList"></div>
+  </div>
+  <div class="box stack" id="soundBox">
+    <h2 style="font-size:16px">🔊 소리</h2>
+    <label class="f"><span class="row between"><span>🎵 배경음악 음량</span><b id="volBgmV">100%</b></span><input type="range" id="volBgm" min="0" max="100" step="5"></label>
+    <label class="f"><span class="row between"><span>💥 효과음 음량</span><b id="volSfxV">100%</b></span><input type="range" id="volSfx" min="0" max="100" step="5"></label>
+    <label class="f"><span class="row between"><span>🗣 영어 음성 음량</span><b id="volVoiceV">100%</b></span><input type="range" id="volVoice" min="0" max="100" step="5"></label>
+    <div class="small muted">이 기기에만 저장돼요. 기기의 볼륨이 0이면 소리가 나지 않으니, 문제에서는 「문장 보기」를 쓰세요.</div>
+  </div>
+  <div class="box stack">
+    <h2 style="font-size:16px">⚙ 챌린지·게임 설정</h2>
+    <div class="row" style="align-items:flex-end">
+      <label class="f" style="flex:1 1 160px">미국 출국 목표일<input type="date" id="target"></label>
+      <label class="f" style="flex:1 1 160px">챌린지 시작일<input type="date" id="campStart"></label>
+      <label class="f" style="flex:0 1 120px">챌린지 일수<input type="number" id="campDays" min="10" max="400"></label>
+    </div>
+    <div class="small muted">151명을 챌린지 일수 안에 모두 클리어하도록 매일 목표가 자동으로 정해집니다. 출국일까지 모두 돌고 나면 2회차를 시작할 수 있습니다.</div>
+    <div class="row"><button class="btn sm" id="bgmBtn">🎵 배경음악 끄기</button></div>
+    <div class="row" id="fsRow"><span class="small muted">글자 크기</span><button class="chip" data-fs="1" aria-pressed="true">보통</button><button class="chip" data-fs="2" aria-pressed="false">크게</button><button class="chip" data-fs="3" aria-pressed="false">더 크게</button></div>
+    <div class="row"><button class="btn sm" id="introBtn">인트로 다시 보기</button><button class="btn sm" id="lookBtn">캐릭터 바꾸기</button></div>
+    <div class="row"><button class="btn sm" id="resetBtn">진행만 초기화 (도감·레벨·카드 유지)</button><button class="btn sm" id="flagBtn">신고한 문제 복사 (0)</button><button class="btn sm" id="wipeBtn" style="color:var(--bad)">처음부터 다시 하기 (레벨·도감·캐릭터 전부 초기화)</button></div><div class="small muted" id="resetNote"></div>
+  </div>
+  </section>
 <section class="view hidden" id="v-log">
   <div class="grid3">
     <div class="tile"><div class="v" id="stStreak">0</div><div class="l">연속 플레이일</div></div>
@@ -563,19 +593,6 @@ details.adv[open] summary::after{content:"▴"}
     <div class="eyebrow">최근 14일</div>
     <div class="row" id="heat" style="gap:4px"></div>
     <div class="small muted">색이 진할수록 그날 한 활동이 많습니다.</div>
-  </div>
-  <div class="box stack">
-    <h2 style="font-size:16px">설정</h2>
-    <div class="row" style="align-items:flex-end">
-      <label class="f" style="flex:1 1 160px">미국 출국 목표일<input type="date" id="target"></label>
-      <label class="f" style="flex:1 1 160px">챌린지 시작일<input type="date" id="campStart"></label>
-      <label class="f" style="flex:0 1 120px">챌린지 일수<input type="number" id="campDays" min="10" max="400"></label>
-    </div>
-    <div class="small muted">151명을 챌린지 일수 안에 모두 클리어하도록 매일 목표가 자동으로 정해집니다. 출국일까지 모두 돌고 나면 2회차를 시작할 수 있습니다.</div>
-    <div class="row"><button class="btn sm" id="bgmBtn">🎵 배경음악 끄기</button></div>
-    <div class="row" id="fsRow"><span class="small muted">글자 크기</span><button class="chip" data-fs="1" aria-pressed="true">보통</button><button class="chip" data-fs="2" aria-pressed="false">크게</button><button class="chip" data-fs="3" aria-pressed="false">더 크게</button></div>
-    <div class="row"><button class="btn sm" id="introBtn">인트로 다시 보기</button><button class="btn sm" id="lookBtn">캐릭터 바꾸기</button></div>
-    <div class="row"><button class="btn sm" id="resetBtn">진행만 초기화 (도감·레벨·카드 유지)</button><button class="btn sm" id="flagBtn">신고한 문제 복사 (0)</button><button class="btn sm" id="wipeBtn" style="color:var(--bad)">처음부터 다시 하기 (레벨·도감·캐릭터 전부 초기화)</button></div><div class="small muted" id="resetNote"></div>
   </div>
   <div class="box stack">
     <h2 style="font-size:16px">단계별 회사</h2>
@@ -8511,10 +8528,13 @@ const TRBOSS={"jfk": "officer", "sbux": "waiter_f", "wmt": "hala", "mcd": "kahil
 const TRCAT={work:['worker_m','worker_f','clerk_m','scientist_m','depot_agent'],life:['clerk_f','waiter_m','waiter_f','baker','maid'],meeting:['ace_trainer_m','ace_trainer_f','artist','interviewers','rich_kid_m'],interview:['doctor_m','veteran_m','rich_m','psychic_m','scientist_f'],airport:['officer','pilot','depot_agent','janitor','cyclist_m'],small:['dancer','musician','harlequin','beauty','artist']};
 function prTrainer(e){if(!e||e.wildQuiz)return null;if(e.boss)return TRBOSS[e.stage.id]||null;const pool=TRPOOL[e.stage.id]||TRCAT[e.stage.cat]||TRPOOL.meta;return pool[(e.i*7+3)%pool.length];}
 function preloadBattle(e,my){loadAtlas((e.shiny?"pokemon/shiny/":"pokemon/")+e.no);loadAtlas(bkPath(my));const tk=prTrainer(e);if(tk)loadAtlas("trainer/"+tk);const bm=BIOME[e.stage.id]||"metropolis";pimg("arena/"+bm+".png");["ui/pbinfo_player.png","ui/pbinfo_enemy_mini.png","ui/overlay_hp.png","ui/pb_tray_ball.png","ui/numbers.png","pokeball/pb.png","pokeball/pb_open.png"].forEach(pimg);}
-const seCache={};function se(name,vol){try{let a=seCache[name];if(!a){a=new Audio(PR+"se/"+name+".wav");seCache[name]=a;}a.currentTime=0;a.volume=vol==null?0.5:vol;a.play().catch(()=>{});}catch(e){}}
+const seCache={};const getVol=k=>{try{const v=localStorage.getItem("ldq_vol_"+k);return v==null?1:Math.max(0,Math.min(1,+v/100));}catch(e){return 1;}};
+const setVol=(k,v)=>{try{localStorage.setItem("ldq_vol_"+k,String(v));}catch(e){}};
+function applyVolumes(){try{if(bgmEl)bgmEl.volume=Math.min(1,bgmVol*getVol("bgm"));}catch(e){}}
+function se(name,vol){try{let a=seCache[name];if(!a){a=new Audio(PR+"se/"+name+".wav");seCache[name]=a;}a.currentTime=0;a.volume=Math.min(1,(vol==null?0.5:vol)*getVol("sfx"));a.play().catch(()=>{});}catch(e){}}
 let bgmEl=null,bgmKey=null,bgmVol=0.35,bgmHold=0;
 const bgmMuted=()=>{try{return localStorage.getItem("ldq_bgm")==="off";}catch(e){return false;}};
-function bgm(name,vol){try{if(bgmKey===name&&(bgmEl||!name))return;if(bgmEl){bgmEl.pause();bgmEl=null;}bgmKey=name;if(!name)return;bgmVol=vol==null?0.35:vol;bgmEl=new Audio(PR+"bgm/"+name+".mp3");bgmEl.loop=true;bgmEl.volume=bgmVol;if(!bgmMuted()&&!bgmHold)bgmEl.play().catch(()=>{});}catch(e){}}
+function bgm(name,vol){try{if(bgmKey===name&&(bgmEl||!name))return;if(bgmEl){bgmEl.pause();bgmEl=null;}bgmKey=name;if(!name)return;bgmVol=vol==null?0.35:vol;bgmEl=new Audio(PR+"bgm/"+name+".mp3");bgmEl.loop=true;bgmEl.volume=Math.min(1,bgmVol*getVol("bgm"));if(!bgmMuted()&&!bgmHold)bgmEl.play().catch(()=>{});}catch(e){}}
 function bgmHoldOn(){bgmHold++;try{if(bgmEl)bgmEl.pause();}catch(e){}}
 function bgmHoldOff(){bgmHold=Math.max(0,bgmHold-1);if(!bgmHold&&!bgmMuted()){try{if(bgmEl)bgmEl.play().catch(()=>{});}catch(e){}}}
 function setBgmMuted(m){try{localStorage.setItem("ldq_bgm",m?"off":"on");}catch(e){}try{if(m){if(bgmEl)bgmEl.pause();}else if(!bgmHold&&bgmEl){bgmEl.play().catch(()=>{});}}catch(e){}renderBgmBtn();}
@@ -8525,7 +8545,22 @@ const sfx={ok:()=>se("hit_strong"),no:()=>se("hit_weak"),win:()=>se("level_up"),
 
 /* ---------- tabs ---------- */
 let view="adv";
-function show(v){view=v;document.body.classList.toggle("onadv",v==="adv");document.querySelectorAll("main > .view").forEach(s=>s.classList.toggle("hidden",s.id!=="v-"+v));document.querySelectorAll("#tabs .tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));try{localStorage.setItem("ldq_tab",v);}catch(e){}if(v==="dex")renderDex();if(v==="log")renderLog();if(v==="adv")renderAdv();if(v==="train")renderPhrase();if(v==="shop")renderShop();if(v==="party")renderPartyView();if(v==="friends")renderFriends();}
+function show(v){view=v;document.body.classList.toggle("onadv",v==="adv");document.querySelectorAll("main > .view").forEach(s=>s.classList.toggle("hidden",s.id!=="v-"+v));document.querySelectorAll("#tabs .tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));try{localStorage.setItem("ldq_tab",v);}catch(e){}if(v==="dex")renderDex();if(v==="log")renderLog();if(v==="adv")renderAdv();if(v==="train")renderPhrase();if(v==="shop")renderShop();if(v==="party")renderPartyView();if(v==="friends")renderFriends();if(v==="settings")renderSettings();}
+
+/* ---------- 버그 제보 ---------- */
+const APP_VER="2026-10-19-r3";
+function bugCtx(){let st=null;try{st=STAGES[objIdx()].name;}catch(e){}return{ver:APP_VER,view:view,stage:st,q:(B&&B.q&&B.q.type)||null,qid:(B&&B.q&&B.q.p&&B.q.p.id)||null,cap:(typeof genCap==="function"?genCap():null),w:innerWidth+"x"+innerHeight,ua:(navigator.userAgent||"").slice(0,100)};}
+async function flushBugs(){if(!S.bugQ||!S.bugQ.length||!window.LDQ_NET||!window.LDQ_NET.postBug)return;const rest=[];for(const r of S.bugQ){try{await window.LDQ_NET.postBug(r);S.bugSent=(S.bugSent||0)+1;}catch(e){rest.push(r);}}S.bugQ=rest;save();renderBugList();}
+function renderBugList(){const el=$("bugList");if(!el)return;const q=(S.bugQ||[]).length;el.textContent="지금까지 보낸 제보 "+(S.bugSent||0)+"건"+(q?" · 전송 대기 "+q+"건 (인터넷이 되면 자동으로 다시 보내요)":"");}
+async function sendBug(){const t=($("bugText").value||"").trim();const msg=$("bugMsg");if(t.length<4){msg.textContent="조금만 더 자세히 적어 주세요";return;}
+ const row={account:ACCT,text:t.slice(0,600),ctx:bugCtx()};$("bugSend").disabled=true;msg.textContent="보내는 중…";
+ try{if(!window.LDQ_NET||!window.LDQ_NET.postBug)throw new Error("offline");await window.LDQ_NET.postBug(row);S.bugSent=(S.bugSent||0)+1;msg.textContent="✅ 제보가 접수됐어요. 고마워요!";$("bugText").value="";}
+ catch(e){S.bugQ=(S.bugQ||[]).concat([row]);msg.textContent="서버에 바로 못 보냈어요. 기기에 저장해 두고 나중에 다시 보낼게요.";$("bugText").value="";}
+ save();renderBugList();$("bugSend").disabled=false;}
+document.addEventListener("click",e=>{if(e.target.closest("#bugSend"))sendBug();});
+function renderSettings(){try{renderBugList();flushBugs();}catch(e){}[["Bgm","bgm"],["Sfx","sfx"],["Voice","voice"]].forEach(([id,k])=>{const el=$("vol"+id);if(!el)return;const v=Math.round(getVol(k)*100);el.value=v;$("vol"+id+"V").textContent=v+"%";});try{renderBgmBtn();}catch(e){}}
+document.addEventListener("input",e=>{const t=e.target;if(!t||!/^vol(Bgm|Sfx|Voice)$/.test(t.id||""))return;const k=t.id.slice(3).toLowerCase();setVol(k,t.value);$(t.id+"V").textContent=t.value+"%";if(k==="bgm")applyVolumes();});
+document.addEventListener("change",e=>{const t=e.target;if(!t||!/^vol(Sfx|Voice)$/.test(t.id||""))return;if(t.id==="volSfx"){try{sfx.ok();}catch(er){}}else{try{speak("Hello! Nice to meet you.");}catch(er){}}});
 $("tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(b)show(b.dataset.v);});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);});
 
@@ -12854,7 +12889,7 @@ function win(){if(!B)return;if(!B.e.wildQuiz&&B.team&&B.fi<B.team.length-1){next
   setTimeout(()=>{if(!B)return;if(e.wildQuiz)say("야생의 "+NAMES[B.no-1]+"이(가) 지쳐서 쓰러졌다!","+"+xp+" XP · 몬스터볼 +1 · 코인 +"+B.coinGain);else{const wl=tl(e,e.boss?"bw":"gw");say(e.name+': "'+(wl?wl[0]:(e.boss?"You got me. Here's your offer... just kidding, catch that first.":"Okay, okay. You win this one."))+'"',(wl?wl[1]+" · ":"")+"+"+xp+" XP · 몬스터볼 +1 · 코인 +"+B.coinGain);if(wl&&e.boss)speak(wl[0]);}setTimeout(()=>{if(!B)return;if(e.wildQuiz){B.foeGone=false;delete B.anim.foeFaint;startCapture();}else trainerWinEnd();},1400);},1200);}
 function trainerWinEnd(){if(!B)return;const no=B.no;if(!S.caught[no]&&!(S.missed||[]).includes(no)){S.missed=S.missed||[];S.missed.push(no);}save();try{renderMissed();}catch(e){}setTimeout(()=>{if(B)finishBattle();},700);}
 let lastLost=false;
-function lose(){if(!B)return;B.phase="lose";B.me=0;B.anim.myFaint=performance.now();sfx.faint();S.losses++;save();say(myName(B.my)+"은(는) 쓰러졌다!","");$("qInfo").innerHTML="";$("qArea").innerHTML="";sfx.no();setTimeout(()=>{if(!B)return;say("눈앞이 캄캄해졌다…","");BLACK={t0:performance.now(),done:false,cb:()=>{lastLost=true;healAll();save();endBattle();placePlayer(true);setTimeout(()=>toast("🏥 포켓몬센터에서 파티가 모두 회복됐어요"),500);scrollToMap();try{if(!bgmMuted()){const h=new Audio(PR+"bgm/heal.mp3");h.volume=0.5;h.play().catch(()=>{});}}catch(e){}}};},900);}
+function lose(){if(!B)return;B.phase="lose";B.me=0;B.anim.myFaint=performance.now();sfx.faint();S.losses++;save();say(myName(B.my)+"은(는) 쓰러졌다!","");$("qInfo").innerHTML="";$("qArea").innerHTML="";sfx.no();setTimeout(()=>{if(!B)return;say("눈앞이 캄캄해졌다…","");BLACK={t0:performance.now(),done:false,cb:()=>{lastLost=true;healAll();save();endBattle();placePlayer(true);setTimeout(()=>toast("🏥 포켓몬센터에서 파티가 모두 회복됐어요"),500);scrollToMap();try{if(!bgmMuted()){const h=new Audio(PR+"bgm/heal.mp3");h.volume=Math.min(1,0.5*getVol("bgm"));h.play().catch(()=>{});}}catch(e){}}};},900);}
 $("fleeBtn").onclick=()=>{if(!B||B.wild||B.phase==="lose")return;const e=B.e;ignoreNpc=room().npcs.find(n=>n.e===e)||null;ignoreSteps=3;endBattle();};
 
 /* ---------- capture (inside battle screen) ---------- */
@@ -12936,7 +12971,7 @@ $("addBtn").onclick=()=>{const ko=$("addKo").value.trim(),en=$("addEn").value.tr
 let speechUnlocked=false;
 function unlockSpeech(){if(speechUnlocked||!("speechSynthesis" in window))return;speechUnlocked=true;try{const u=new SpeechSynthesisUtterance(" ");u.volume=0;speechSynthesis.speak(u);}catch(e){}}
 ["pointerdown","keydown","touchstart"].forEach(ev=>document.addEventListener(ev,unlockSpeech,{once:false,passive:true}));
-function speak(t,rate,lang){try{if(!("speechSynthesis" in window)||!t)return;const u=new SpeechSynthesisUtterance(String(t).replace(/_____/g,"blank"));const isKo=lang==="ko-KR";u.lang=isKo?"ko-KR":"en-US";u.rate=rate||(isKo?1.05:0.92);if(isKo)u.pitch=1.15;const vs=speechSynthesis.getVoices();const v=isKo?(vs.find(x=>/^ko/i.test(x.lang)&&/Yuna|Google|Sora|Heami/i.test(x.name))||vs.find(x=>/^ko/i.test(x.lang))):(vs.find(x=>/en-US/i.test(x.lang)&&/Samantha|Google US|Aria|Jenny|Alex/i.test(x.name))||vs.find(x=>/en[-_]US/i.test(x.lang))||vs.find(x=>/^en/i.test(x.lang)));if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.resume();const mine=++speakSeq;if(!speakHeld){speakHeld=true;bgmHoldOn();}const rel=()=>{if(mine===speakSeq&&speakHeld){speakHeld=false;bgmHoldOff();}};u.onend=rel;u.onerror=rel;setTimeout(rel,Math.max(3500,String(t).length*95+2000));setTimeout(()=>{try{speechSynthesis.speak(u);}catch(e){rel();}},40);}catch(e){}}
+function speak(t,rate,lang){try{if(!("speechSynthesis" in window)||!t)return;const u=new SpeechSynthesisUtterance(String(t).replace(/_____/g,"blank"));u.volume=getVol("voice");const isKo=lang==="ko-KR";u.lang=isKo?"ko-KR":"en-US";u.rate=rate||(isKo?1.05:0.92);if(isKo)u.pitch=1.15;const vs=speechSynthesis.getVoices();const v=isKo?(vs.find(x=>/^ko/i.test(x.lang)&&/Yuna|Google|Sora|Heami/i.test(x.name))||vs.find(x=>/^ko/i.test(x.lang))):(vs.find(x=>/en-US/i.test(x.lang)&&/Samantha|Google US|Aria|Jenny|Alex/i.test(x.name))||vs.find(x=>/en[-_]US/i.test(x.lang))||vs.find(x=>/^en/i.test(x.lang)));if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.resume();const mine=++speakSeq;if(!speakHeld){speakHeld=true;bgmHoldOn();}const rel=()=>{if(mine===speakSeq&&speakHeld){speakHeld=false;bgmHoldOff();}};u.onend=rel;u.onerror=rel;setTimeout(rel,Math.max(3500,String(t).length*95+2000));setTimeout(()=>{try{speechSynthesis.speak(u);}catch(e){rel();}},40);}catch(e){}}
 let speakSeq=0,speakHeld=false;
 if("speechSynthesis" in window){try{speechSynthesis.getVoices();}catch(e){}}
 
@@ -13300,6 +13335,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
   async listTrades(){const uid=await myUid();const r=await sb.from("trades").select("*").or("from_user.eq."+uid+",to_user.eq."+uid).order("created_at",{ascending:false}).limit(40);if(r.error)throw r.error;return r.data;},
   async createTrade(t){const uid=await myUid();const r=await sb.from("trades").insert(Object.assign({from_user:uid},t));if(r.error)throw r.error;},
   async listAnnouncements(since){const r=await sb.from("announcements").select("*").gte("created_at",since).order("created_at",{ascending:false}).limit(20);if(r.error)throw r.error;return r.data;},
+  async postBug(r){const uid=await myUid();const x=await sb.from("bug_reports").insert({user_id:uid,account:r.account,text:r.text,ctx:r.ctx||{}});if(x.error)throw x.error;},
   async postAnnounce(a){const uid=await myUid();const r=await sb.from("announcements").insert({user_id:uid,account:a.account,kind:a.kind,text:a.text});if(r.error)throw r.error;},
   async updateTrade(id,patch){const r=await sb.from("trades").update(Object.assign({},patch,{updated_at:new Date().toISOString()})).eq("id",id);if(r.error)throw r.error;}
  };
