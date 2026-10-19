@@ -380,10 +380,12 @@ details.adv[open] summary::after{content:"▴"}
   <div class="sub">외노자가 되기 위한 모험</div>
   <div class="box stack">
     <div class="prof"><canvas id="profCv0" width="104" height="136"></canvas><div class="dlg">야르르르이히~! 어서 오게! 나는 신바람 이박사! 스트레스는 만병의 근원이야. 영어 스트레스도 신바람으로 날려 버리자고! 자, 아이디와 암호를 넣게!</div></div>
-    <label class="f">아이디<input type="text" id="uid" placeholder="ID" autocomplete="username" autocapitalize="none"></label>
-    <label class="f">암호<input type="password" id="pw" placeholder="Password" autocomplete="current-password"></label>
+    <form id="loginForm" class="stack" autocomplete="on" action="#" method="post">
+    <label class="f">아이디<input type="text" id="uid" name="username" placeholder="ID" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next"></label>
+    <label class="f">암호<input type="password" id="pw" name="password" placeholder="Password" autocomplete="current-password" enterkeyhint="go"></label>
     <label class="row small" style="gap:6px;cursor:pointer"><input type="checkbox" id="rememberMe" style="width:auto"> 아이디·암호 기억하기</label>
-    <div class="row"><button class="btn primary" id="loginBtn">로그인</button><span class="small" id="loginMsg"></span></div>
+    <div class="row"><button class="btn primary" id="loginBtn" type="submit">로그인</button><span class="small" id="loginMsg"></span></div>
+    </form>
   </div>
 </div></div>
 <div class="ov hidden" id="evoOv"><div class="ov-in">
@@ -522,7 +524,7 @@ details.adv[open] summary::after{content:"▴"}
   <div class="box stack hidden" id="statBox"></div>
   <div class="box stack hidden" id="nickBox"><b id="nickTitle">이름 바꾸기</b><div class="small muted">내가 잡은 포켓몬에게 별명을 붙여 보세요. 최대 10글자예요.</div><div class="row"><input type="text" id="nickIn" maxlength="10" placeholder="별명" style="flex:1 1 160px"><button class="btn primary" id="nickSave">저장</button><button class="btn" id="nickReset">기본 이름</button><button class="btn ghost" id="nickCancel">취소</button></div></div>
   <div class="box stack"><h3 style="margin:0;font-size:16px">보유 포켓몬</h3><div class="boxgrid" id="boxGrid"></div></div>
-  <div class="box stack"><div class="row between"><h3 style="margin:0;font-size:16px">🔬 포켓몬 박사 연구소</h3><span class="small muted" id="labCount"></span></div><div class="small muted">파티에 안 쓰는 포켓몬을 박사에게 맡기면 코인을 받아요. 도감에는 그대로 남고, 언제든 데려올 수 있어요.</div><div class="boxgrid" id="labGrid"></div></div>
+  <div class="box stack hidden" id="labBox"><div class="row between"><h3 style="margin:0;font-size:16px">🔬 포켓몬 박사 연구소</h3><span class="small muted" id="labCount"></span></div><div class="small muted">파티에 안 쓰는 포켓몬을 박사에게 맡기면 코인을 받아요. 도감에는 그대로 남고, 언제든 데려올 수 있어요.</div><div class="boxgrid" id="labGrid"></div></div>
 </section>
 <section class="view hidden" id="v-shop">
   <div class="box stack"><div class="row between"><h2 style="margin:0;font-size:18px">🏪 포켓마트</h2><span class="pill acc">코인 <b id="shopCoins">0</b></span></div>
@@ -842,7 +844,7 @@ function startEvo(n,to){loadAtlas("pokemon/"+n);(Array.isArray(to)?to:[to]).forE
   if(choice){$("evoDlg").textContent=myName(n)+"이(가) 진화하려고 한다! 어느 모습으로?";$("evoBtns").querySelectorAll("[data-to]").forEach(b=>b.onclick=()=>{target=+b.dataset.to;t0=performance.now();$("evoBtns").innerHTML='<button class="btn" id="evoStop">진화 멈추기 (B)</button>';$("evoStop").onclick=stop;});}
   else $("evoStop").onclick=stop;
   function stop(){stopped=true;const c=mon(n);c.stop=true;save();$("evoDlg").textContent="어라…? "+myName(n)+"의 진화가 멈췄다! (도감에서 다시 진화시킬 수 있습니다)";$("evoBtns").innerHTML='<button class="btn primary" id="evoClose">닫기</button>';$("evoClose").onclick=()=>ov.classList.add("hidden");}
-  function finish(){done=true;sfx.get();const c=mon(n);const nc={at:todayStr(),where:"진화",lv:c.lv,xp:c.xp};S.caught[target]=S.caught[target]||nc;if(c.nick&&!S.caught[target].nick)S.caught[target].nick=c.nick;S.caught[target].lv=Math.max(S.caught[target].lv||0,c.lv);if(c.shiny)S.caught[target].shiny=true;delete S.caught[target].hp;ensureParty();const pi=S.party.indexOf(n);if(pi>=0){S.party[pi]=target;S.party=S.party.filter((x,i,arr)=>arr.indexOf(x)===i);}if(S.partner===n)S.partner=target;ensureParty();save();hud();$("evoDlg").textContent=fixJosa("축하합니다! "+myName(n)+"은(는) "+NAMES[target-1]+"(으)로 진화했다!");$("evoBtns").innerHTML='<button class="btn primary" id="evoClose">좋았어!</button>';$("evoClose").onclick=()=>{ov.classList.add("hidden");renderAll();if(view==="dex")renderDex();maybeEvo();};}
+  function finish(){done=true;sfx.get();const c=mon(n);const nc={at:todayStr(),where:"진화",lv:c.lv,xp:c.xp};acquire(target,nc);if(c.nick&&!S.caught[target].nick)S.caught[target].nick=c.nick;S.caught[target].lv=Math.max(S.caught[target].lv||0,c.lv);if(c.shiny)S.caught[target].shiny=true;delete S.caught[target].hp;ensureParty();const pi=S.party.indexOf(n);if(pi>=0){S.party[pi]=target;S.party=S.party.filter((x,i,arr)=>arr.indexOf(x)===i);}if(S.partner===n)S.partner=target;ensureParty();save();hud();$("evoDlg").textContent=fixJosa("축하합니다! "+myName(n)+"은(는) "+NAMES[target-1]+"(으)로 진화했다!");$("evoBtns").innerHTML='<button class="btn primary" id="evoClose">좋았어!</button>';$("evoClose").onclick=()=>{ov.classList.add("hidden");renderAll();if(view==="dex")renderDex();maybeEvo();};}
   const loop=t=>{if(ov.classList.contains("hidden"))return;const x=$("evoCv").getContext("2d");x.clearRect(0,0,200,200);let show=n;if(target&&!stopped&&!done){const el=t-t0;const period=Math.max(80,500-el/10);if(el>3600){finish();}else show=Math.floor(el/period)%2?target:n;}if(done)show=target;drawMon(x,show,100,186,{t,anim:true,fit:170});requestAnimationFrame(loop);};requestAnimationFrame(loop);}
 
 
@@ -8349,7 +8351,7 @@ add("basic","죄송한데 다시 한번 말씀해 주시겠어요?","Sorry, coul
 add("basic","이건 영어로 뭐라고 해요?","How do you say this in English?");
 add("basic","저는 괜찮아요. 신경 쓰지 마세요.","I'm fine. Don't worry about me.");
 function allPhrases(){return P.concat(S.custom);}
-function streak(){let n=0,d=todayStr();const has=k=>{const x=S.days[k];return x&&(x.review+x.talk+x.write+(x.win||0))>0;};if(!has(d))d=addDays(d,-1);while(has(d)){n++;d=addDays(d,-1);}return n;}
+function streak(){let n=0,d=todayStr();const has=k=>{const x=S.days[k];return x&&(x.review+x.talk+x.write+(x.win||0)+(x.login||0))>0;};if(!has(d))d=addDays(d,-1);while(has(d)){n++;d=addDays(d,-1);}return n;}
 function level(){return Math.floor(Math.sqrt(S.xp/25))+1;}
 function caughtCount(){return Object.keys(S.caught).length;}
 function hud(){try{renderFlagBtn();}catch(e){}try{renderMissionBtn();}catch(e){}const dd=daysBetween(todayStr(),S.target);$("hdrDday").textContent=dd>0?"D-"+dd:dd===0?"D-DAY":"D+"+(-dd);$("hdrLv").textContent=level();$("hdrBalls").textContent=S.balls+(S.superBalls?"+"+S.superBalls:"");{const c=$("hdrCoins");if(c)c.textContent=S.coins||0;}$("hdrDex").textContent=caughtCount()+"/"+NMON;const pc=S.partner&&mon(S.partner);$("hdrPartner").innerHTML=pc?"선두 <b>"+esc(myName(S.partner))+" Lv "+pc.lv+"</b>":"";renderParty();}
@@ -8370,9 +8372,9 @@ const SHOP=[
 Object.keys(ITEM_NAME).forEach(k=>SHOP.push({k:"evo_"+k,ic:ITEM_ICON[k],n:ITEM_NAME[k],d:"진화용 아이템 (도감에서 사용)",c:k==="LINKING_CORD"?200:150,own:()=>"보유 "+((S.evoItems&&S.evoItems[k])||0)+"개",f:()=>{S.evoItems=S.evoItems||{};S.evoItems[k]=(S.evoItems[k]||0)+1;}}));
 
 /* ---------- 가챠 ---------- */
-const GC_RATES=[["C",0.60],["U",0.25],["R",0.11],["E",0.032],["L",0.008]];
+const GC_RATES=[["C",0.62],["U",0.25],["R",0.10],["E",0.029],["L",0.001]];const GC_LEG=[144,145,146,150,151,243,244,245,249,250,251];const GC_LV={C:5,U:5,R:8,E:30,L:50};const gcLevel=(no,band)=>Math.max(stageMin(no),GC_LV[band]);
 const GC_ORDER=["C","U","R","E","L"];const GC_NAME={C:"일반",U:"고급",R:"희귀",E:"영웅",L:"전설"};const GC_COL={C:"#8a8a62",U:"#3b82c4",R:"#8a56c2",E:"#e08a1e",L:"#d4a017"};const GC_BACK={C:15,U:25,R:40,E:70,L:120};
-let GC_POOL=null;const gcBand=n=>{const b=BST[n-1];return b>=580?"L":b>=540?"E":b>=450?"R":b>=350?"U":"C";};
+let GC_POOL=null;const gcBand=n=>{const b=BST[n-1];return GC_LEG.includes(n)?"L":b>=530?"E":b>=450?"R":b>=350?"U":"C";};
 function gcPool(){if(GC_POOL)return GC_POOL;const p={C:[],U:[],R:[],E:[],L:[]};for(let n=1;n<=NMON;n++)p[gcBand(n)].push(n);GC_POOL=p;return p;}
 function gcBandRoll(force){let band="C";const r=Math.random();let acc=0;for(const [k,pr] of GC_RATES){acc+=pr;if(r<acc){band=k;break;}}if(force&&GC_ORDER.indexOf(band)<GC_ORDER.indexOf(force))band=force;return band;}
 
@@ -8422,11 +8424,11 @@ function gcShowGrid(out){const el=$("gachaRes");if(!el)return;
  el.innerHTML=out.map((o,i)=>'<div class="gcard '+o.band+'" style="--c:'+GC_COL[o.band]+';animation-delay:'+(i*70)+'ms"><canvas width="60" height="45" data-gn="'+o.no+'"></canvas><b>'+(o.shiny?"✨":"")+esc(NAMES[o.no-1])+'</b><small>'+GC_NAME[o.band]+(o.note?' · '+esc(o.note):'')+'</small></div>').join("");
  const draw=()=>el.querySelectorAll("canvas[data-gn]").forEach(cv=>{const x=cv.getContext("2d");x.clearRect(0,0,60,45);drawIcon(x,+cv.dataset.gn,30,43,1.4,false);});draw();setTimeout(draw,400);}
 function gcPull(n,free){const cost=free?0:(n===10?1100:120);if(!free&&(S.coins||0)<cost){toast("코인이 부족해요");return;}S.coins-=cost;const out=[];let gotR=false;const rate=window.__gcShiny!=null?window.__gcShiny:1/20;
- for(let i=0;i<n;i++){S.gcPity=(S.gcPity||0)+1;let force=null;if(S.gcPity>=30)force="E";else if(n===10&&i===9&&!gotR)force="R";
+ for(let i=0;i<n;i++){S.gcPity=(S.gcPity||0)+1;let force=null;if(S.gcPity>=50)force="E";else if(n===10&&i===9&&!gotR)force="R";
   const band=gcBandRoll(force);const pool=gcPool()[band];const no=pool[rnd(pool.length)];const shiny=Math.random()<rate;
   if(band==="E"||band==="L")S.gcPity=0;if(GC_ORDER.indexOf(band)>=2)gotR=true;
-  let note="";const had=S.caught[no];
-  if(!had){S.caught[no]={at:todayStr(),where:"가챠",lv:Math.max(5,stageMin(no)),xp:0};if(shiny)S.caught[no].shiny=true;try{addToParty(no);}catch(e){}note="NEW!";}
+  let note="";const had=(S.caught[no]&&!S.caught[no].gone)?S.caught[no]:null;
+  if(!had){acquire(no,{at:todayStr(),where:"가챠",lv:gcLevel(no,band),xp:0});if(shiny)S.caught[no].shiny=true;try{addToParty(no);}catch(e){}note="NEW!";}
   else if(shiny&&!had.shiny){had.shiny=true;note="✨ 이로치로 변신!";}
   else{const back=GC_BACK[band];addCoins(back);gainXpTo(no,30);note="중복 · 코인 +"+back;}
   out.push({no,band,shiny,note,isNew:!had});}
@@ -8436,8 +8438,8 @@ function gcPull(n,free){const cost=free?0:(n===10?1100:120);if(!free&&(S.coins||
  const el0=$("gachaRes");if(el0)el0.innerHTML="";
  try{gcCinematic(out,()=>gcShowGrid(out));}catch(e){try{$("gcOv").classList.add("hidden");}catch(x){}gcShowGrid(out);}
  return out;}
-function renderGacha(){const info=$("gachaInfo");if(!info)return;const pity=S.gcPity||0;info.textContent="뽑은 횟수 "+(S.gcCount||0)+" · 영웅 보장까지 "+Math.max(0,30-pity)+"회";$("gc1").disabled=(S.coins||0)<120;$("gc10").disabled=(S.coins||0)<1100;{const f=$("gcFree");if(f){f.hidden=!(S.freeTen>0);f.textContent="🎁 무료 10회 뽑기 ("+(S.freeTen||0)+")";}}
- $("gachaRates").textContent="일반 60% · 고급 25% · 희귀 11% · 영웅 3.2% · 전설 0.8% · 이로치 5% · 10회 뽑기는 희귀 이상 1마리 보장 · 30회마다 영웅 이상 보장";}
+function renderGacha(){const info=$("gachaInfo");if(!info)return;const pity=S.gcPity||0;info.textContent="뽑은 횟수 "+(S.gcCount||0)+" · 영웅 보장까지 "+Math.max(0,50-pity)+"회";$("gc1").disabled=(S.coins||0)<120;$("gc10").disabled=(S.coins||0)<1100;{const f=$("gcFree");if(f){f.hidden=!(S.freeTen>0);f.textContent="🎁 무료 10회 뽑기 ("+(S.freeTen||0)+")";}}
+ $("gachaRates").textContent="일반 62% · 고급 25% · 희귀 10% · 영웅 2.9% · 전설 0.1% · 이로치 5% · 10회 뽑기는 희귀 이상 1마리 보장 · 50회마다 영웅 보장 · 전설은 진짜 전설 포켓몬만(보장 없음)";}
 document.addEventListener("click",e=>{if(e.target.closest("#gc1"))gcPull(1);else if(e.target.closest("#gc10"))gcPull(10);else if(e.target.closest("#gcFree")){if(S.freeTen>0){S.freeTen--;gcPull(10,true);}}});
 function renderShop(){renderGacha();renderMissions();const el=$("shopList");if(!el)return;$("shopCoins").textContent=S.coins||0;el.innerHTML=SHOP.map((it,i)=>'<div class="shopitem"><span class="ic">'+it.ic+'</span><span class="tx"><b>'+it.n+'</b><small>'+it.d+(it.own()?' · '+it.own():'')+'</small></span><button class="btn sm primary" data-buy="'+i+'" '+((S.coins||0)<it.c?'disabled':'')+'>'+it.c+' 코인</button></div>').join("");}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-buy]");if(!b)return;const it=SHOP[+b.dataset.buy];if(!it||(S.coins||0)<it.c){toast("코인이 부족합니다");return;}S.coins-=it.c;it.f();sfx.get();save();hud();renderShop();toast(it.ic+" "+it.n+" 구매!");});
@@ -8514,7 +8516,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b
 /* ---------- campaign ---------- */
 function campInfo(){const days=Math.max(10,S.camp.days||100);const di=Math.min(days,Math.max(1,daysBetween(S.camp.start,todayStr())+1));const req=Math.min(TOTAL,Math.ceil(TOTAL*di/days));return{days,di,req};}
 function clearedCount(){return Object.keys(S.cleared||{}).length;}
-function streakDays(){try{const d=new Date();let n=0;const act=x=>x&&((x.win||0)+(x.review||0)+(x.talk||0)+(x.write||0))>0;const key=dt=>dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");if(!act(S.days[key(d)]))d.setDate(d.getDate()-1);while(act(S.days[key(d)])){n++;d.setDate(d.getDate()-1);if(n>400)break;}return n;}catch(e){return 0;}}
+function streakDays(){try{const d=new Date();let n=0;const act=x=>x&&((x.win||0)+(x.review||0)+(x.talk||0)+(x.write||0)+(x.login||0))>0;const key=dt=>dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");if(!act(S.days[key(d)]))d.setDate(d.getDate()-1);while(act(S.days[key(d)])){n++;d.setDate(d.getDate()-1);if(n>400)break;}return n;}catch(e){return 0;}}
 function renderCamp(){hpGift();try{renderStrip();}catch(e){}S.pos=clearedCount();const {days,di,req}=campInfo();$("campDay").textContent="외노자 되기 DAY "+di+" / "+days+(S.lap>1?"  ·  "+S.lap+"회차":"")+(streakDays()>1?"  ·  🔥 "+streakDays()+"일 연속":"");$("campBar").style.width=Math.round(S.pos/TOTAL*100)+"%";$("campGoal").textContent="오늘까지 목표: "+req+"명 클리어 ("+(ENC[req-1]?ENC[req-1].stage.name:"")+")";$("campPos").textContent="클리어 "+S.pos+" / "+TOTAL+" · 만난 표현 "+Object.keys(S.seenQ||{}).length+"개";const st=$("campStatus");const diff=S.pos-req;let tip="";if(S.pos>=TOTAL){st.className="pill good";st.textContent="전원 클리어";tip="이박사: 야르르르이히~! 다 깼구먼! 미국 가서도 신바람 나게!";}else if(diff>=0){st.className="pill good";st.textContent=diff>0?"목표보다 "+diff+"명 앞섬":"오늘 목표 달성";tip=diff>0?"이박사: 야르르르이히~! 목표보다 앞서가네! 이 기세로 쭉!":"이박사: 오늘 목표 끝! 신바람 나는 하루구먼!";}else{st.className="pill "+(diff<-5?"bad":"warn");st.textContent="오늘 "+(-diff)+"명 남음";tip=diff<-5?"이박사: 많이 밀렸구먼! 스트레스 받지 말고 한 명씩! 야르르르이히~!":"이박사: 오늘 "+(-diff)+"명만 더 이기면 되네! 신바람 나게 가 보자고!";}$("profTip").textContent=tip;}
 
 /* ---------- world (top-down rooms) ---------- */
@@ -8530,7 +8532,7 @@ const TCOL={no:"#8a8a62",fi:"#e8702a",wa:"#5b84ee",el:"#e6bf1d",gr:"#6bb43d",ic:
 function typeMult(a,defs){let m=1;for(const d of defs){const v=(TCH[a]||{})[d];if(v!=null)m*=v;}return m;}
 function tpills(types){return types.map(t=>'<span class="tp" style="background:'+TCOL[t]+'">'+TEN[t]+' '+TKO[t]+'</span>').join("");}
 function multWord(m){return m===0?"무효":m>=2?"굉장 ×"+Math.min(m,4):m<1?"별로 ×0.5":"보통";}
-function ensureParty(){if(!Array.isArray(S.party))S.party=[];S.party=S.party.filter((n,i,a)=>S.caught[n]&&!S.caught[n].sent&&!S.caught[n].gone&&a.indexOf(n)===i).slice(0,5);if(S.partner&&S.caught[S.partner]&&!S.caught[S.partner].sent&&!S.caught[S.partner].gone){const i=S.party.indexOf(S.partner);if(i>0){S.party.splice(i,1);S.party.unshift(S.partner);}else if(i<0){S.party.unshift(S.partner);S.party=S.party.slice(0,5);}}else if(S.party.length){S.partner=S.party[0];}else{const k=+Object.keys(S.caught).find(x=>!S.caught[x].sent&&!S.caught[x].gone);if(k){S.party=[k];S.partner=k;}}}
+function ensureParty(){Object.values(S.caught||{}).forEach(c=>{if(c&&c.sent){delete c.sent;c.gone=c.gone||Date.now();}});if(!Array.isArray(S.party))S.party=[];S.party=S.party.filter((n,i,a)=>S.caught[n]&&!S.caught[n].sent&&!S.caught[n].gone&&a.indexOf(n)===i).slice(0,5);if(S.partner&&S.caught[S.partner]&&!S.caught[S.partner].sent&&!S.caught[S.partner].gone){const i=S.party.indexOf(S.partner);if(i>0){S.party.splice(i,1);S.party.unshift(S.partner);}else if(i<0){S.party.unshift(S.partner);S.party=S.party.slice(0,5);}}else if(S.party.length){S.partner=S.party[0];}else{const k=+Object.keys(S.caught).find(x=>!S.caught[x].sent&&!S.caught[x].gone);if(k){S.party=[k];S.partner=k;}}}
 function addToParty(n){ensureParty();if(!S.party.includes(n)&&S.party.length<5)S.party.push(n);}
 function setLead(n){ensureParty();S.party=[n].concat(S.party.filter(x=>x!==n)).slice(0,5);S.partner=n;}
 let partyLoopOn=false;function startPartyLoop(){if(partyLoopOn)return;partyLoopOn=true;const loop=t=>{if(view!=="party"){partyLoopOn=false;return;}const cvs=document.querySelectorAll("#v-party canvas[data-n]");if(!cvs.length){partyLoopOn=false;return;}cvs.forEach(cv=>{const x=cv.getContext("2d");x.clearRect(0,0,cv.width,cv.height);const big=cv.dataset.big==="1";if(!drawMon(x,+cv.dataset.n,cv.width/2,cv.height-6,{t,anim:big,fit:cv.height-14}))drawIcon(x,+cv.dataset.n,cv.width/2,cv.height-8,big?3:2,false);});requestAnimationFrame(loop);};requestAnimationFrame(loop);}
@@ -8555,7 +8557,7 @@ function renderParty(){ensureParty();const tp=$("toParty");if(tp)tp.textContent=
 function renderPartyView(){ensureParty();$("partyCount").textContent=S.party.length+"/"+PARTY_MAX;let h="";
   for(let i=0;i<PARTY_MAX;i++){const n=S.party[i];if(n){const m=mon(n)||{lv:5};h+='<div class="pslot'+(i===0?' lead':'')+'"><canvas width="144" height="126" data-n="'+n+'" data-big="1"></canvas><div class="pbody"><b>'+esc(myName(n))+' <small>Lv'+m.lv+'</small>'+(i===0?' <span class="pill acc">선두</span>':'')+'</b><div>'+tpills(TYPES[n-1])+'</div>'+hpBar(n)+'<small>'+(curHp(n)<=0?'기절 · 기력의조각이 필요해요':'체력 '+curHp(n)+'/'+maxHp(n))+'</small></div><div class="pbtns"><button class="btn sm" data-pm-up="'+i+'" '+(i===0?'disabled':'')+' aria-label="위로">▲</button><button class="btn sm" data-pm-down="'+i+'" '+(i===S.party.length-1?'disabled':'')+' aria-label="아래로">▼</button><button class="btn sm" data-pm-rm="'+n+'" '+(S.party.length<=1?'disabled':'')+'>빼기</button><button class="btn sm" data-stat="'+n+'">📊 상태</button><button class="btn sm ghost" data-nick="'+n+'" aria-label="이름 바꾸기">✏️ 이름</button></div></div>';}else h+='<div class="pslot empty"><span>'+(i+1)+'번 칸 · 아래 보유 목록에서 넣어 주세요</span></div>';}
   $("partySlots").innerHTML=h;const rest=Object.keys(S.caught).map(Number).filter(n=>!S.party.includes(n)&&!S.caught[n].sent&&!S.caught[n].gone).sort((a,b)=>a-b);const labList=Object.keys(S.caught).map(Number).filter(n=>S.caught[n].sent&&!S.caught[n].gone).sort((a,b)=>a-b);const full=S.party.length>=PARTY_MAX;
-  $("boxGrid").querySelectorAll&&0;$("boxGrid").innerHTML=rest.length?rest.map(n=>{const m=mon(n)||{lv:5};return '<div class="bcard"><canvas width="120" height="96" data-n="'+n+'"></canvas><b>'+esc(myName(n))+'</b><small>Lv'+m.lv+' · '+(curHp(n)<=0?'기절':'체력 '+curHp(n)+'/'+maxHp(n))+'</small><button class="btn sm ghost" data-stat="'+n+'">📊 상태</button><button class="btn sm" data-pm-add="'+n+'" '+(full?'disabled':'')+'>'+(full?'가득 참':'넣기')+'</button><button class="btn sm ghost" data-lab-send="'+n+'">'+(labArm===n?'정말 보낼까요? +'+labReward(n)+'코인':'박사에게 보내기')+'</button><button class="btn sm ghost" data-nick="'+n+'" aria-label="이름 바꾸기">✏️ 이름</button></div>';}).join(""):'<div class="small muted" style="grid-column:1/-1">보유한 다른 포켓몬이 없습니다. 더 잡아 보세요!</div>';
+  $("boxGrid").querySelectorAll&&0;$("boxGrid").innerHTML=rest.length?rest.map(n=>{const m=mon(n)||{lv:5};return '<div class="bcard"><canvas width="120" height="96" data-n="'+n+'"></canvas><b>'+esc(myName(n))+'</b><small>Lv'+m.lv+' · '+(curHp(n)<=0?'기절':'체력 '+curHp(n)+'/'+maxHp(n))+'</small><button class="btn sm ghost" data-stat="'+n+'">📊 상태</button><button class="btn sm" data-pm-add="'+n+'" '+(full?'disabled':'')+'>'+(full?'가득 참':'넣기')+'</button><button class="btn sm ghost" data-lab-send="'+n+'">'+(labArm===n?'정말 보낼까요? 되돌릴 수 없어요':'박사에게 보내기')+'</button><button class="btn sm ghost" data-nick="'+n+'" aria-label="이름 바꾸기">✏️ 이름</button></div>';}).join(""):'<div class="small muted" style="grid-column:1/-1">보유한 다른 포켓몬이 없습니다. 더 잡아 보세요!</div>';
   $("labCount").textContent=labList.length?labList.length+"마리 맡김":"";$("labGrid").innerHTML=labList.length?labList.map(n=>{const m=mon(n)||{lv:5};return '<div class="bcard"><canvas width="120" height="96" data-n="'+n+'"></canvas><b>'+esc(myName(n))+'</b><small>Lv'+m.lv+'</small><button class="btn sm" data-lab-back="'+n+'">데려오기</button><button class="btn sm ghost" data-nick="'+n+'" aria-label="이름 바꾸기">✏️ 이름</button></div>';}).join(""):'<div class="small muted" style="grid-column:1/-1">아직 맡긴 포켓몬이 없어요. 파티에 안 쓰는 포켓몬을 보내 보세요.</div>';
   $("partyNote").textContent=full?"파티가 가득 찼습니다. 다른 포켓몬을 넣으려면 먼저 한 마리를 빼 주세요.":"";startPartyLoop();}
 let nickNo=null;
@@ -8567,7 +8569,7 @@ document.addEventListener("click",e=>{const nb=e.target.closest("[data-nick]");i
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target&&e.target.id==="nickIn"){e.preventDefault();saveNick(false);}});
 let labArm=null;const labReward=n=>10+((mon(n)||{lv:5}).lv)*2;
 document.addEventListener("click",e=>{const ls=e.target.closest("[data-lab-send]"),lb=e.target.closest("[data-lab-back]");if(!(ls||lb))return;if(B)return;ensureParty();
-  if(ls){const n=+ls.dataset.labSend;if(!S.caught[n]||S.party.includes(n)||n===S.partner){toast("파티에 있는 포켓몬은 보낼 수 없어요");return;}if(labArm!==n){labArm=n;renderPartyView();setTimeout(()=>{if(labArm===n){labArm=null;if(view==="party")renderPartyView();}},3500);return;}labArm=null;const c=labReward(n);S.caught[n].sent=1;addCoins(c);sfx.ok();save();hud();renderPartyView();toast("🔬 박사: 고맙네! 연구에 큰 도움이 되겠어! 코인 +"+c);return;}
+  if(ls){const n=+ls.dataset.labSend;if(!S.caught[n]||S.party.includes(n)||n===S.partner){toast("파티에 있는 포켓몬은 보낼 수 없어요");return;}if(labArm!==n){labArm=n;renderPartyView();setTimeout(()=>{if(labArm===n){labArm=null;if(view==="party")renderPartyView();}},3500);return;}labArm=null;giveAway(n);sfx.ok();save();hud();renderPartyView();toast("🔬 "+NAMES[n-1]+"을(를) 박사에게 보냈어요. 도감에는 기록이 남아요");return;}
   if(lb){const n=+lb.dataset.labBack;if(S.caught[n]){delete S.caught[n].sent;sfx.ok();save();renderPartyView();toast("🔬 "+NAMES[n-1]+"을(를) 데려왔어요");}}});
 document.addEventListener("click",e=>{const up=e.target.closest("[data-pm-up]"),dn=e.target.closest("[data-pm-down]"),rm=e.target.closest("[data-pm-rm]"),ad=e.target.closest("[data-pm-add]");if(!(up||dn||rm||ad))return;if(B)return;ensureParty();
   if(up||dn){const i=+(up||dn).dataset[up?"pmUp":"pmDown"];const j=up?i-1:i+1;if(j<0||j>=S.party.length)return;[S.party[i],S.party[j]]=[S.party[j],S.party[i]];S.partner=S.party[0];}
@@ -12823,7 +12825,7 @@ function throwBall(){if(!B||!B.cap||B.cap.thrown||S.balls+S.superBalls<=0)return
   setTimeout(()=>{if(!B||!B.cap)return;B.anim.shrink=performance.now();c.shrink=1;},450);setTimeout(()=>{if(!B||!B.cap)return;c.inBall=true;},800);
   for(let i=0;i<c.shakes;i++)setTimeout(()=>{if(B&&B.cap)sfx.bounce();},1000+i*500+250);
   const total=1000+c.shakes*500+200;
-  setTimeout(()=>{if(!B||!B.cap)return;if(c.result==="caught"){sfx.get();const no=B.no;S.caught[no]=S.caught[no]||{at:todayStr(),where:B.e.stage.name,lv:Math.max(enemyLv(B.e),stageMin(no)),xp:0};if(B.shiny)S.caught[no].shiny=true;S.missed=S.missed.filter(x=>x!==no);if(!S.partner)S.partner=no;{const dd=day();dd.catch=(dd.catch||0)+1;}addToParty(no);save();hud();say("GET! "+(B.shiny?"✨ 이로치 ":"")+NAMES[no-1]+"을(를) 잡았다!",S.party.includes(no)?"도감에 등록되고 파티에 합류했습니다.":"도감에 등록되었습니다. 파티가 가득 차서(5마리) 도감에서 바꿀 수 있어요.");$("qArea").innerHTML='<div class="row"><button class="btn primary" id="goOn">계속</button></div>';$("goOn").onclick=()=>{finishBattle();};}
+  setTimeout(()=>{if(!B||!B.cap)return;if(c.result==="caught"){sfx.get();const no=B.no;acquire(no,{at:todayStr(),where:B.e.stage.name,lv:Math.max(enemyLv(B.e),stageMin(no)),xp:0});if(B.shiny)S.caught[no].shiny=true;S.missed=S.missed.filter(x=>x!==no);if(!S.partner)S.partner=no;{const dd=day();dd.catch=(dd.catch||0)+1;}addToParty(no);save();hud();say("GET! "+(B.shiny?"✨ 이로치 ":"")+NAMES[no-1]+"을(를) 잡았다!",S.party.includes(no)?"도감에 등록되고 파티에 합류했습니다.":"도감에 등록되었습니다. 파티가 가득 차서(5마리) 도감에서 바꿀 수 있어요.");$("qArea").innerHTML='<div class="row"><button class="btn primary" id="goOn">계속</button></div>';$("goOn").onclick=()=>{finishBattle();};}
     else{sfx.miss();c.inBall=false;c.shrink=null;delete B.anim.shrink;c.thrown=false;save();say("앗! 빠져나왔다!","남은 볼 "+S.balls+"개");$("throwBtn").disabled=S.balls<=0;$("throwBtn").textContent="몬스터볼 던지기 (볼 "+S.balls+"개)";$("skipBtn").disabled=false;if(S.balls<=0){$("capMsg").textContent="몬스터볼이 다 떨어졌다. 훈련에서 볼을 얻어 다시 오세요.";if(!S.missed.includes(B.no))S.missed.push(B.no);save();}}},total);}
 function renderMissed(){const box=$("missedBox");if(box)box.classList.add("hidden");}
 function meetWild(no){if(B||MODE!=="map")return;if(!S.partner){toast("파트너 포켓몬이 없습니다");return;}const base=ENC_BY_NO[no];if(!base)return;show("adv");const e=Object.assign({},base,{wildQuiz:true,boss:false,i:-1,name:"야생의 "+NAMES[no-1],title:"야생",line:""});startBattle(e,false);}
@@ -13113,9 +13115,11 @@ function copyCard(){const t=cardText(myProfile());const msg=$("frShareMsg");cons
 const NET=()=>window.LDQ_NET||null;
 function ownedOf(pr){return Array.isArray(pr&&pr.owned)?pr.owned:[];}
 function pendingOfferNos(){return new Set(FR.trades.filter(t=>t.status==="pending"&&t.from_account===ACCT).map(t=>t.offer_no));}
+function acquire(no,obj){const c=S.caught[no];if(!c){S.caught[no]=obj;return true;}if(c.gone){S.caught[no]=Object.assign(obj,{got:Date.now()});return true;}return false;}
 function giveAway(no){const c=S.caught[no];if(!c)return;c.gone=Date.now();delete c.sent;S.party=(S.party||[]).filter(x=>x!==no);if(S.partner===no)S.partner=null;ensureParty();}
 function receiveMon(no,lv,nick){const now=Date.now();const c=S.caught[no];if(c){delete c.gone;c.got=now;c.lv=Math.max(c.lv||0,lv||5);if(nick&&!c.nick)c.nick=nick;}else S.caught[no]={at:todayStr(),where:"교환",lv:lv||5,xp:0,got:now,nick:nick||undefined};save();try{if(window.pushProfileNow)window.pushProfileNow();}catch(e){}}
-async function loadFriends(){const n=NET();if(!n){FR.err="이 기능은 서버에 연결된 웹사이트에서 쓸 수 있어요.";return;}FR.busy=true;FR.err="";try{if(window.pushProfileNow)await window.pushProfileNow();const [pf,tr]=await Promise.all([n.listProfiles(),n.listTrades()]);FR.profiles=pf||[];FR.trades=tr||[];FR.loaded=true;}catch(e){FR.err=(e&&e.message&&/relation|does not exist|schema cache|404/i.test(e.message))?"친구·교환 기능을 켜려면 서버에 테이블을 한 번 만들어야 해요. (관리자용 안내 SQL을 실행해 주세요)":"친구 정보를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.";}FR.busy=false;}
+const tmo=(p,ms)=>Promise.race([Promise.resolve(p),new Promise((_,rj)=>setTimeout(()=>rj(new Error("timeout")),ms))]);
+async function loadFriends(){const n=NET();if(!n){FR.err="이 기능은 서버에 연결된 웹사이트에서 쓸 수 있어요.";return;}FR.busy=true;FR.err="";try{if(window.pushProfileNow){try{await tmo(window.pushProfileNow(),6000);}catch(e){}}const [pf,tr]=await Promise.all([tmo(n.listProfiles(),10000),tmo(n.listTrades(),10000)]);FR.profiles=pf||[];FR.trades=tr||[];FR.loaded=true;}catch(e){FR.err=(e&&e.message&&/relation|does not exist|schema cache|404/i.test(e.message))?"친구·교환 기능을 켜려면 서버에 테이블을 한 번 만들어야 해요. (관리자용 안내 SQL을 실행해 주세요)":((e&&/timeout/.test(e.message))?"서버 응답이 없어요. 새로고침을 눌러 다시 시도해 주세요.":"친구 정보를 불러오지 못했어요. 새로고침을 눌러 주세요.")+" ("+String((e&&e.message)||e).slice(0,80)+")";}FR.busy=false;}
 async function syncTrades(quiet){const n=NET();if(!n||!ACCT)return;try{const tr=await n.listTrades();FR.trades=tr||[];let changed=false;for(const t of FR.trades){if(t.status==="accepted"&&t.from_account===ACCT&&!t.from_applied){if(isOwned(t.offer_no))giveAway(t.offer_no);receiveMon(t.want_no,t.want_lv,t.want_nick);try{await n.updateTrade(t.id,{from_applied:true});}catch(e){}t.from_applied=true;changed=true;if(!quiet)toast("🔁 "+NAMES[t.offer_no-1]+" ↔ "+NAMES[t.want_no-1]+" 교환이 성사됐어요!");}}
   if(changed){save();hud();try{renderAll();}catch(e){}}
   const inc=FR.trades.filter(t=>t.status==="pending"&&t.to_account===ACCT).length;if(inc&&!quiet)toast("🔁 교환 제안 "+inc+"건이 도착했어요 (친구 탭)");}catch(e){}}
@@ -13165,11 +13169,11 @@ function renderAll(){hud();renderCamp();renderEnc();renderMissed();renderPhrase(
 const PROF={hair:"#e4e4e4",skin:"#f6cfae",shirt:"#f4f4f4",pants:"#2b3550",glasses:true,tie:"#d62839"};
 drawProf($("profCv0"));
 function tryLogin(){const id=$("uid").value.trim().toLowerCase();const pw=$("pw").value;if(!ACCOUNTS.includes(id)){$("loginMsg").textContent="그런 트레이너는 없는데? 아이디를 다시 보게.";return;}if(pw!==PASS){$("loginMsg").textContent="암호가 틀렸네! 다시 넣어 보게.";$("pw").value="";return;}try{localStorage.setItem("ldq_acct",id);if($("rememberMe").checked)localStorage.setItem("ldq_remember",JSON.stringify({id,pw}));else localStorage.removeItem("ldq_remember");}catch(e){}boot(id);}
-$("loginBtn").onclick=tryLogin;$("pw").addEventListener("keydown",e=>{if(e.key==="Enter")tryLogin();});$("uid").addEventListener("keydown",e=>{if(e.key==="Enter")$("pw").focus();});
+$("loginForm").addEventListener("submit",e=>{e.preventDefault();tryLogin();});
 $("logoutBtn").onclick=()=>{try{localStorage.removeItem("ldq_acct");localStorage.removeItem("ldq_remember");}catch(e){}ACCT=null;dbDoc=null;abortBattle();$("loginOv").classList.remove("hidden");hideFlow();$("pw").value="";$("uid").value="";$("loginMsg").textContent="";};
 async function askPerms(){try{const pm=await useCap("permissions");if(pm){const st=await pm.state();const need=["db","user"].filter(k=>st[k]==="prompt");if(need.length)await pm.request(need);}}catch(e){}}
 function boot(acct){ACCT=acct;bgm(null);askPerms();setTimeout(()=>{try{if(S.partner){loadAtlas("pokemon/"+S.partner);loadAtlas("pokemon/back/"+S.partner);}}catch(e){}},0);$("hdrWho").textContent=WHO[acct]+" 트레이너";$("loginOv").classList.add("hidden");$("loginMsg").textContent="";loadLocal();renderAll();let t0="adv";try{t0=localStorage.getItem("ldq_tab")||"adv";}catch(e){}if(location.hash){const h=location.hash.slice(1);if($("v-"+h))t0=h;}show(t0);placePlayer(true,true);initDb();applyLook();dailyBonus();runFlow();}
-function dailyBonus(){const t=todayStr();if(S.lastLogin===t)return;const prev=S.lastLogin;S.lastLogin=t;let n=1;if(prev){const d=daysBetween(prev,t);n=d===1?Math.min(7,(S.loginStreak||0)+1):1;}S.loginStreak=n;const c=10*n;addCoins(c);save();hud();setTimeout(()=>toast("🎁 오늘의 접속 보너스! 코인 +"+c+" ("+n+"일 연속)"),1800);}
+function dailyBonus(){const t=todayStr();day().login=1;if(S.lastLogin===t)return;const prev=S.lastLogin;S.lastLogin=t;let n=1;if(prev){const d=daysBetween(prev,t);n=d===1?Math.min(7,(S.loginStreak||0)+1):1;}S.loginStreak=n;const c=10*n;addCoins(c);save();hud();setTimeout(()=>toast("🎁 오늘의 접속 보너스! 코인 +"+c+" ("+n+"일 연속)"),1800);}
 /* ---- flow: intro -> character -> starter ---- */
 function hideFlow(){["introOv","charOv","starterOv"].forEach(id=>$(id).classList.add("hidden"));}
 function runFlow(){if(!playerId()){showChar(()=>runFlow());return;}if(!S.intro){showIntro(()=>{S.intro=true;save();runFlow();});return;}if(!S.starter){showStarter();}}
@@ -13284,7 +13288,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
   }catch(e){loadOv(false);$("loginMsg").textContent="서버에 연결하지 못했어요. 인터넷을 확인해 주세요.";}
   finally{$("loginBtn").disabled=false;}
  };
- $("loginBtn").onclick=tryLogin;
+ /* 로그인은 폼 제출(submit)로 처리 */
  let rev=null,pulling=false;
  const clone=o=>JSON.parse(JSON.stringify(o));
  /* 두 기기의 진도 합치기: 클리어·잡은 포켓몬은 합집합, 나머지 값은 remoteWins 가 true 면 서버 값 우선 */
@@ -13298,9 +13302,10 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
    if(rc.shiny)lc.shiny=true;
    {const g=Math.max(lc.gone||0,rc.gone||0),tg=Math.max(lc.got||0,rc.got||0);if(g>tg)lc.gone=g;else delete lc.gone;if(tg)lc.got=tg;}
    if(remoteWins){if(rc.sent)lc.sent=1;else delete lc.sent;}}
+  {const mm=(x,y)=>{if(typeof x==="number"&&typeof y==="number")return Math.max(x,y);if(x&&y&&typeof x==="object"&&typeof y==="object"){const o=Object.assign({},x);for(const k of Object.keys(y))o[k]=(k in x)?mm(x[k],y[k]):y[k];return o;}return x!=null?x:y;};L.days=mm(L.days||{},R.days||{});}
   for(const k of ["wins","xp","losses","lap"])L[k]=Math.max(L[k]||0,R[k]||0);
   if(Array.isArray(R.missed)){L.missed=Array.from(new Set((L.missed||[]).concat(R.missed))).filter(n=>!L.caught[n]);}
-  if(remoteWins){for(const k of ["coins","balls","superBalls","repelSteps","lureSteps","lastLogin","loginStreak","party","partner","evoItems","custom","days","weak","seenQ","flags","stats","writes","talkSeen","cards","look"])if(R[k]!==undefined)L[k]=clone(R[k]);}
+  if(remoteWins){for(const k of ["coins","balls","superBalls","repelSteps","lureSteps","lastLogin","loginStreak","party","partner","evoItems","custom","weak","seenQ","flags","stats","writes","talkSeen","cards","look"])if(R[k]!==undefined)L[k]=clone(R[k]);}
   if(!Array.isArray(L.party)||!L.party.length)L.party=clone(R.party||[]);
  }
  async function initDbInner(){
