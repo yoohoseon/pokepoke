@@ -780,11 +780,11 @@ const ACCOUNTS=["kjs","yhs","ktm"],WHO={kjs:"김준석",yhs:"유호선",ktm:"김
 let S=def();
 const useCap=n=>(window.claude&&typeof window.claude.use==="function")?window.claude.use(n):Promise.resolve(null);
 let dbDoc=null,saveT=null;
-function saveLocal(){if(!ACCT)return;try{localStorage.setItem("ldq_state_"+ACCT,JSON.stringify(S));}catch(e){}}
+function saveLocal(){if(!ACCT)return;S.savedAt=Date.now();try{localStorage.setItem("ldq_state_"+ACCT,JSON.stringify(S));}catch(e){}}
 function save(){saveLocal();hud();if(dbDoc){clearTimeout(saveT);saveT=setTimeout(()=>{dbDoc.set(S).then(()=>$("sync").textContent="동기화됨").catch(()=>$("sync").textContent="기기 저장");},700);}}
 function sanitize(){if(S.epoch!==EPOCH){const tg=S.target;S=Object.assign(def(),{target:tg||"2027-12-01"});}if(!S.caught||typeof S.caught!=="object")S.caught={};for(const k of Object.keys(S.caught)){let c=S.caught[k];if(!c||typeof c!=="object"){c={at:todayStr(),where:"?"};S.caught[k]=c;}if(typeof c.lv!=="number"||isNaN(c.lv))c.lv=5;if(typeof c.xp!=="number"||isNaN(c.xp))c.xp=0;}if(S.partner!=null&&!S.caught[S.partner])S.partner=+Object.keys(S.caught)[0]||null;if(typeof S.balls!=="number")S.balls=5;if(!S.evoItems||typeof S.evoItems!=="object")S.evoItems={};for(const k of ["coins","superBalls","repelSteps","lureSteps"])if(typeof S[k]!=="number"||isNaN(S[k]))S[k]=0;if(typeof S.xp!=="number")S.xp=0;ensureParty();}
 function loadLocal(){S=def();try{const r=localStorage.getItem("ldq_state_"+ACCT);if(r)S=Object.assign(def(),JSON.parse(r));}catch(e){}sanitize();}
-async function initDb(){const [db,user]=await Promise.all([useCap("db"),useCap("user")]);if(!db||!user)return;let id=null;try{id=await user.id();}catch(e){}if(!id)return;const acct=ACCT;dbDoc=db.doc("data/users/"+id+"/quest_"+acct);try{const snap=await dbDoc.get();if(ACCT!==acct)return;if(snap.exists){let d={};try{d=JSON.parse(JSON.stringify(snap.data()||{}));}catch(e){d={};}S=Object.assign(def(),d);sanitize();saveLocal();placePlayer(true);renderAll();save();applyLook();hideFlow();runFlow();}else{await dbDoc.set(S);}$("sync").textContent="동기화됨";}catch(e){dbDoc=null;}}
+async function initDb(){const [db,user]=await Promise.all([useCap("db"),useCap("user")]);if(!db||!user)return;let id=null;try{id=await user.id();}catch(e){}if(!id)return;const acct=ACCT;dbDoc=db.doc("data/users/"+id+"/quest_"+acct);try{const snap=await dbDoc.get();if(ACCT!==acct)return;if(snap.exists){let d={};try{d=JSON.parse(JSON.stringify(snap.data()||{}));}catch(e){d={};}S=Object.assign(def(),d);sanitize();saveLocal();placePlayer(true,true);renderAll();save();applyLook();hideFlow();runFlow();}else{await dbDoc.set(S);}$("sync").textContent="동기화됨";}catch(e){dbDoc=null;}}
 function day(){const t=todayStr();S.days[t]=S.days[t]||{review:0,talk:0,write:0,win:0};return S.days[t];}
 add("basic","나중에 봐요.","See you later.");
 add("basic","이름이 뭐예요?","What's your name?");
@@ -7108,7 +7108,12 @@ function cityDoorAt(x,y){return CITY.bld.findIndex(b=>b.d===CITY.d&&b.dx===x&&b.
 function buildingOpen(si){return si<=0||bossCleared(si-1);}
 function objIdx(){for(let si=0;si<STAGES.length;si++)if(!bossCleared(si))return si;return STAGES.length-1;}
 let lockedAt=0;function lockedMsg(bi){const n=performance.now();if(n-lockedAt<1600)return;lockedAt=n;toast("🔒 "+STAGES[bi].name+"은(는) 아직 잠겨 있어요. 먼저 "+STAGES[bi-1].name+"의 보스를 이기고 오세요!");}
-function resetPlayerAt(x,y,dir){PL.x=x;PL.y=y;PL.dir=dir;PL.moving=false;PL.px=x*TS;PL.py=y*TS;Q.x=x;Q.y=y;Q.px=x*TS;Q.py=y*TS;Q.moving=false;camX=-1e9;try{const rr=room();if(rr&&!rr.city)armGuards(rr);}catch(e){}}
+let locTimer=null;
+function noteLoc(){if(!ACCT||!S||B)return;S.loc={c:S.inCity?1:0,d:CITY.d,s:S.room,x:PL.x,y:PL.y,f:PL.dir};if(!locTimer)locTimer=setTimeout(()=>{locTimer=null;try{save();}catch(e){}},4000);}
+function restoreLoc(){const L=S.loc;if(!L||typeof L.x!=="number"||typeof L.y!=="number")return false;if(!!L.c!==!!S.inCity||L.s!==S.room)return false;try{if(S.inCity){if(!(L.d>=0&&L.d<DIST.length))return false;setDistrict(L.d);}const r=room();if(blocked(r,L.x,L.y,true))return false;resetPlayerAt(L.x,L.y,"UDLR".includes(L.f)?L.f:"D");return true;}catch(e){return false;}}
+document.addEventListener("visibilitychange",()=>{if(document.hidden){try{noteLoc();saveLocal();if(dbDoc)dbDoc.set(S);}catch(e){}}});
+addEventListener("pagehide",()=>{try{noteLoc();saveLocal();if(dbDoc)dbDoc.set(S);}catch(e){}});
+function resetPlayerAt(x,y,dir){PL.x=x;PL.y=y;PL.dir=dir;PL.moving=false;PL.px=x*TS;PL.py=y*TS;Q.x=x;Q.y=y;Q.px=x*TS;Q.py=y*TS;Q.moving=false;camX=-1e9;try{const rr=room();if(rr&&!rr.city)armGuards(rr);}catch(e){}try{noteLoc();}catch(e){}}
 function enterBuilding(si){FADE={t0:performance.now(),mid:false,cb:()=>{S.inCity=false;S.room=si;save();resetPlayerAt(1,5,"R");renderEnc();toast("🏢 "+STAGES[si].name+" 입장");}};}
 function exitToCity(si){FADE={t0:performance.now(),mid:false,cb:()=>{S.inCity=true;S.room=si;const b=CITY.bld[si];setDistrict(b.d);save();resetPlayerAt(b.ex,b.ey,"D");renderEnc();}};}
 function travelDistrict(dir){const nd=CITY.d+dir;if(nd<0||nd>=DIST.length||FADE)return;if(dir>0){const last=CITY.bld.filter(b=>b.d===CITY.d).slice(-1)[0];if(!bossCleared(last.si)){const n=performance.now();if(n-lockedAt>1600){lockedAt=n;toast("🔒 다음 구역으로 가려면 "+STAGES[last.si].name+"의 보스까지 이겨야 해요");}return;}}
@@ -7161,14 +7166,14 @@ function drawProf(cv){const ctx=cv.getContext("2d");ctx.clearRect(0,0,cv.width,c
 
 const BOSS_IMG={"amzn": "img/jassy.png", "meta": "img/zuck.png", "aapl": "img/cook.png", "goog": "img/pichai.png", "msft": "img/nadella.png", "nvda": "img/jensen.png", "tsla": "img/musk.png", "oai": "img/altman.png", "final": "img/trump.png", "dis": "img/iger.png", "jpm": "img/dimon.png", "brk": "img/buffett.png", "orcl": "img/ellison.png"};
 function portrait(id){const src=BOSS_IMG[id];if(!src)return null;if(!portraits[id]){const im=new Image();im.src=src;portraits[id]=im;}const im=portraits[id];return im.complete&&im.naturalWidth>0?im:null;}
-function placePlayer(force){migrate();const r=room();if(force||PL.x==null){if(S.inCity){const b=CITY.bld[Math.min(S.room||0,CITY.bld.length-1)];setDistrict(b.d);resetPlayerAt(b.ex,b.ey,"D");}else resetPlayerAt(1,5,"R");}}
+function placePlayer(force,fromLoad){migrate();if(force&&fromLoad&&restoreLoc())return;const r=room();if(force||PL.x==null){if(S.inCity){const b=CITY.bld[Math.min(S.room||0,CITY.bld.length-1)];setDistrict(b.d);resetPlayerAt(b.ex,b.ey,"D");}else resetPlayerAt(1,5,"R");}}
 function isDoor(r,x,y){if(r.city)return false;return y===5&&(x===0||x===r.RW-1);}
 function doorOpen(r,x){if(x===0)return true;return bossCleared(r.si);}
 function blocked(r,x,y,ignorePlayer){if(x<0||y<0||x>=r.RW||y>=r.RH)return true;if(r.city){const v=cityTile(x,y);if(v===1)return true;if(v===3)return !buildingOpen(cityDoorAt(x,y));return cityDyn(x,y);}if(isDoor(r,x,y))return !doorOpen(r,x);if(y<2||y>9||x===0||x===r.RW-1)return true;if(r.desks.some(d=>d.x===x&&d.y===y))return true;if(r.plants.some(d=>d.x===x&&d.y===y))return true;if(r.npcs.some(n=>n.x===x&&n.y===y&&!(n.guard&&S.cleared[n.e.i])))return true;return false;}
 function tryStep(dir){if(PL.moving||MODE!=="map"||FADE||SPOT)return;PL.dir=dir;const [dx,dy]=DIRV[dir];const nx=PL.x+dx,ny=PL.y+dy;const r=room();const now0=performance.now();if(blocked(r,nx,ny)){if(now0-PL.bump>260){PL.bump=now0;if(r.city&&cityTile(nx,ny)===3){const bi=cityDoorAt(nx,ny);if(!buildingOpen(bi))lockedMsg(bi);}}return;}PL.moving=true;PL.t0=now0;PL.dur=keys.run?115:190;Q.dur=PL.dur;PL.step=(PL.step||0)+1;PL.fx=PL.x;PL.fy=PL.y;PL.x=nx;PL.y=ny;
   // partner follows into the player's previous tile
   if(!(Q.x===PL.fx&&Q.y===PL.fy)){Q.moving=true;Q.t0=PL.t0;Q.fx=Q.x;Q.fy=Q.y;Q.x=PL.fx;Q.y=PL.fy;Q.dir=Q.x>Q.fx?"R":Q.x<Q.fx?"L":Q.y>Q.fy?"D":"U";}}
-function onArrive(){const r=room();if(ignoreSteps>0)ignoreSteps--;else ignoreNpc=null;if(r.city){const bi=cityDoorAt(PL.x,PL.y);if(bi>=0){enterBuilding(bi);return;}if(CITY.d<DIST.length-1&&PL.x===CITY.gr[0]&&PL.y===CITY.gr[1]){travelDistrict(1);return;}if(CITY.d>0&&PL.x===CITY.gl[0]&&PL.y===CITY.gl[1]){travelDistrict(-1);return;}wildTick(cityTile(PL.x,PL.y)===2);return;}if(isDoor(r,PL.x,PL.y)){exitToCity(r.si);return;}
+function onArrive(){try{noteLoc();}catch(e){}const r=room();if(ignoreSteps>0)ignoreSteps--;else ignoreNpc=null;if(r.city){const bi=cityDoorAt(PL.x,PL.y);if(bi>=0){enterBuilding(bi);return;}if(CITY.d<DIST.length-1&&PL.x===CITY.gr[0]&&PL.y===CITY.gr[1]){travelDistrict(1);return;}if(CITY.d>0&&PL.x===CITY.gl[0]&&PL.y===CITY.gl[1]){travelDistrict(-1);return;}wildTick(cityTile(PL.x,PL.y)===2);return;}if(isDoor(r,PL.x,PL.y)){exitToCity(r.si);return;}
   for(const n of r.npcs){if(S.cleared[n.e.i]||n===ignoreNpc)continue;if(seesPlayer(r,n)){SPOT={npc:n,t0:performance.now(),phase:0};sfx.ok();break;}}}
 
 function makeWeakQ(){const ids=Object.keys(S.weak||{}).filter(id=>S.weak[id]>0&&!(S.flags&&S.flags[id]));if(!ids.length)return null;const id=ids[rnd(ids.length)];
@@ -11068,7 +11073,7 @@ function tryLogin(){const id=$("uid").value.trim().toLowerCase();const pw=$("pw"
 $("loginBtn").onclick=tryLogin;$("pw").addEventListener("keydown",e=>{if(e.key==="Enter")tryLogin();});$("uid").addEventListener("keydown",e=>{if(e.key==="Enter")$("pw").focus();});
 $("logoutBtn").onclick=()=>{try{localStorage.removeItem("ldq_acct");localStorage.removeItem("ldq_remember");}catch(e){}ACCT=null;dbDoc=null;abortBattle();$("loginOv").classList.remove("hidden");hideFlow();$("pw").value="";$("uid").value="";$("loginMsg").textContent="";};
 async function askPerms(){try{const pm=await useCap("permissions");if(pm){const st=await pm.state();const need=["db","user"].filter(k=>st[k]==="prompt");if(need.length)await pm.request(need);}}catch(e){}}
-function boot(acct){ACCT=acct;bgm(null);askPerms();setTimeout(()=>{try{if(S.partner){loadAtlas("pokemon/"+S.partner);loadAtlas("pokemon/back/"+S.partner);}}catch(e){}},0);$("hdrWho").textContent=WHO[acct]+" 트레이너";$("loginOv").classList.add("hidden");$("loginMsg").textContent="";loadLocal();renderAll();let t0="adv";try{t0=localStorage.getItem("ldq_tab")||"adv";}catch(e){}if(location.hash){const h=location.hash.slice(1);if($("v-"+h))t0=h;}show(t0);placePlayer(true);initDb();applyLook();dailyBonus();runFlow();}
+function boot(acct){ACCT=acct;bgm(null);askPerms();setTimeout(()=>{try{if(S.partner){loadAtlas("pokemon/"+S.partner);loadAtlas("pokemon/back/"+S.partner);}}catch(e){}},0);$("hdrWho").textContent=WHO[acct]+" 트레이너";$("loginOv").classList.add("hidden");$("loginMsg").textContent="";loadLocal();renderAll();let t0="adv";try{t0=localStorage.getItem("ldq_tab")||"adv";}catch(e){}if(location.hash){const h=location.hash.slice(1);if($("v-"+h))t0=h;}show(t0);placePlayer(true,true);initDb();applyLook();dailyBonus();runFlow();}
 function dailyBonus(){const t=todayStr();if(S.lastLogin===t)return;const prev=S.lastLogin;S.lastLogin=t;let n=1;if(prev){const d=daysBetween(prev,t);n=d===1?Math.min(7,(S.loginStreak||0)+1):1;}S.loginStreak=n;const c=10*n;addCoins(c);save();hud();setTimeout(()=>toast("🎁 오늘의 접속 보너스! 코인 +"+c+" ("+n+"일 연속)"),1800);}
 /* ---- flow: intro -> character -> starter ---- */
 function hideFlow(){["introOv","charOv","starterOv"].forEach(id=>$(id).classList.add("hidden"));}
@@ -11155,16 +11160,50 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
   finally{$("loginBtn").disabled=false;}
  };
  $("loginBtn").onclick=tryLogin;
+ let rev=null,pulling=false;
+ const clone=o=>JSON.parse(JSON.stringify(o));
+ /* 두 기기의 진도 합치기: 클리어·잡은 포켓몬은 합집합, 나머지 값은 remoteWins 가 true 면 서버 값 우선 */
+ function mergeInto(L,R,remoteWins){
+  L.cleared=L.cleared||{};for(const k of Object.keys(R.cleared||{}))L.cleared[k]=true;
+  L.caught=L.caught||{};
+  for(const [k,rc] of Object.entries(R.caught||{})){const lc=L.caught[k];if(!lc){L.caught[k]=clone(rc);continue;}
+   if((rc.lv||0)>(lc.lv||0)||((rc.lv||0)===(lc.lv||0)&&(rc.xp||0)>(lc.xp||0))){lc.lv=rc.lv;lc.xp=rc.xp;}
+   if(rc.nick&&!lc.nick)lc.nick=rc.nick;
+   if(remoteWins){if(rc.sent)lc.sent=1;else delete lc.sent;}}
+  for(const k of ["wins","xp","losses","lap"])L[k]=Math.max(L[k]||0,R[k]||0);
+  if(Array.isArray(R.missed)){L.missed=Array.from(new Set((L.missed||[]).concat(R.missed))).filter(n=>!L.caught[n]);}
+  if(remoteWins){for(const k of ["coins","balls","superBalls","repelSteps","lureSteps","lastLogin","loginStreak","party","partner","evoItems","custom","days","weak","seenQ","flags","stats","writes","talkSeen","cards","look"])if(R[k]!==undefined)L[k]=clone(R[k]);}
+  if(!Array.isArray(L.party)||!L.party.length)L.party=clone(R.party||[]);
+ }
  window.initDb=initDb=async function(){
   const acct=ACCT;let uid=null;
   try{const r=await sb.auth.getSession();uid=r&&r.data&&r.data.session&&r.data.session.user&&r.data.session.user.id;}catch(e){}
   if(!uid)return;
-  const doc={async set(state){const si=stageInfo();const body={user_id:uid,account:acct,data:JSON.parse(JSON.stringify(state)),stage_cleared:si.n,stage_name:si.last,coins:state.coins||0,wins:state.wins||0,caught:Object.keys(state.caught||{}).length,last_login:state.lastLogin||null,updated_at:new Date().toISOString()};const r=await sb.from("progress").upsert(body);if(r.error)throw r.error;}};
+  const doc={async set(state){
+   const si=stageInfo();const body={user_id:uid,account:acct,data:clone(state),stage_cleared:si.n,stage_name:si.last,coins:state.coins||0,wins:state.wins||0,caught:Object.keys(state.caught||{}).length,last_login:state.lastLogin||null,updated_at:new Date().toISOString()};
+   if(!rev){const r=await sb.from("progress").upsert(body);if(r.error)throw r.error;rev=body.updated_at;return;}
+   let r=await sb.from("progress").update(body).eq("user_id",uid).eq("updated_at",rev).select("updated_at");
+   if(r.error)throw r.error;
+   if(r.data&&r.data.length){rev=body.updated_at;return;}
+   /* 그사이 다른 기기가 저장함: 서버 값을 받아 합친 뒤 다시 저장 */
+   const cur=await sb.from("progress").select("data,updated_at").eq("user_id",uid).maybeSingle();
+   if(cur.error)throw cur.error;
+   if(!cur.data){const u=await sb.from("progress").upsert(body);if(u.error)throw u.error;rev=body.updated_at;return;}
+   mergeInto(S,cur.data.data,false);try{sanitize();renderAll();hud();toast("🔄 다른 기기의 진도를 합쳤어요");}catch(e){}
+   {const s2=stageInfo();body.stage_cleared=s2.n;body.stage_name=s2.last;body.caught=Object.keys(S.caught||{}).length;body.coins=S.coins||0;body.wins=S.wins||0;body.last_login=S.lastLogin||null;}
+   body.data=clone(S);body.updated_at=new Date().toISOString();
+   const r2=await sb.from("progress").update(body).eq("user_id",uid).eq("updated_at",cur.data.updated_at).select("updated_at");
+   if(r2.error)throw r2.error;
+   rev=(r2.data&&r2.data.length)?body.updated_at:cur.data.updated_at;
+  }};
+  async function pull(){if(pulling||!uid||B)return;pulling=true;try{const c=await sb.from("progress").select("data,updated_at").eq("user_id",uid).maybeSingle();if(c.error||!c.data)return;if(c.data.updated_at!==rev){mergeInto(S,c.data.data,true);rev=c.data.updated_at;try{sanitize();saveLocal();renderAll();hud();toast("🔄 다른 기기의 진도를 불러왔어요");}catch(e){}}}catch(e){}finally{pulling=false;}}
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&ACCT===acct)pull();});
   try{
-   const r=await sb.from("progress").select("data").eq("user_id",uid).maybeSingle();if(r.error)throw r.error;
+   const r=await sb.from("progress").select("data,updated_at").eq("user_id",uid).maybeSingle();if(r.error)throw r.error;
    if(ACCT!==acct)return;
    const remote=r.data&&r.data.data;
-   if(remote&&score(remote)>=score(S)){S=Object.assign(def(),JSON.parse(JSON.stringify(remote)));sanitize();saveLocal();placePlayer(true);renderAll();applyLook();hideFlow();runFlow();dbDoc=doc;save();}
+   if(remote&&(score(remote)>score(S)||(score(remote)===score(S)&&(remote.savedAt||0)>=(S.savedAt||0)))){rev=r.data.updated_at;S=Object.assign(def(),clone(remote));sanitize();saveLocal();placePlayer(true,true);renderAll();applyLook();hideFlow();runFlow();dbDoc=doc;save();}
+   else if(remote){rev=r.data.updated_at;mergeInto(S,remote,false);dbDoc=doc;await doc.set(S);}
    else{dbDoc=doc;await doc.set(S);}
    $("sync").textContent="동기화됨";
   }catch(e){dbDoc=null;$("sync").textContent="기기 저장";}
