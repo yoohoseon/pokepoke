@@ -570,11 +570,11 @@ details.adv[open] summary::after{content:"▴"}
   <div class="box stack" id="frNet"></div>
 </section>
 <section class="view hidden" id="v-settings">
-      <div class="box stack" id="nickBox">
+      <div class="box stack" id="tnBox">
     <h2 style="font-size:16px">🏷 트레이너 이름</h2>
     <div class="small muted">친구 목록·랭킹·전설 소식에 보이는 이름이에요. 1~10자, 비워서 저장하면 기본 이름으로 돌아가요.</div>
-    <div class="row" style="gap:6px"><input id="nickIn" maxlength="10" style="flex:1;min-width:0" placeholder="예) 미국가는 호선"><button class="btn primary" id="nickSave">저장</button></div>
-    <span class="small" id="nickMsg"></span>
+    <div class="row" style="gap:6px"><input id="tnIn" maxlength="10" style="flex:1;min-width:0" placeholder="예) 미국가는 호선"><button class="btn primary" id="tnSave">저장</button></div>
+    <span class="small" id="tnMsg"></span>
   </div>
     <div class="box stack" id="bugBox">
     <h2 style="font-size:16px">🐞 버그 제보</h2>
@@ -15987,10 +15987,10 @@ $("loginForm").addEventListener("submit",e=>{e.preventDefault();tryLogin();});
 $("logoutBtn").onclick=()=>{try{localStorage.removeItem("ldq_acct");localStorage.removeItem("ldq_remember");}catch(e){}ACCT=null;dbDoc=null;abortBattle();$("loginOv").classList.remove("hidden");hideFlow();$("pw").value="";$("uid").value="";$("loginMsg").textContent="";};
 async function askPerms(){try{const pm=await useCap("permissions");if(pm){const st=await pm.state();const need=["db","user"].filter(k=>st[k]==="prompt");if(need.length)await pm.request(need);}}catch(e){}}
 function WNdummy(){}
-function nickSave(){const i=$("nickIn");if(!i)return;let v=i.value.replace(/[<>&"'\\]/g,"").replace(/\s+/g," ").trim().slice(0,10);S.tname=v;i.value=v;applyName();try{localStorage.setItem("ldq_tname_"+ACCT,v);}catch(e){}save();let pp=null;try{pp=window.pushProfileNow&&window.pushProfileNow();}catch(e){}const nm=$("nickMsg");nm.textContent="✅ 저장됐어요! "+(v?"이름이 「"+v+"」(으)로 바뀌었어요.":"기본 이름으로 돌아갔어요.");nm.style.cssText="font-weight:700;color:var(--good,#1b7f4a)";const b=$("nickSave");const ob="저장";b.textContent="✅ 저장됨";b.disabled=true;setTimeout(()=>{b.textContent=ob;b.disabled=false;},1800);try{toast("✅ 이름이 저장됐어요");}catch(e){}if(pp&&pp.then)pp.then(ok=>{nm.textContent+=ok?" (서버에도 저장됨)":" (서버 저장은 실패했어요. 이 기기에는 저장됨)";}).catch(()=>{});}
-function initNick(){const i=$("nickIn");if(i&&document.activeElement!==i)i.value=S.tname||"";}
-document.addEventListener("click",e=>{const t=e.target;if(t&&t.closest&&t.closest("#nickSave"))nickSave();});
-document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target&&e.target.id==="nickIn"){e.preventDefault();nickSave();}});
+function tnSave(){const i=$("tnIn");if(!i)return;let v=i.value.replace(/[<>&"'\\]/g,"").replace(/\s+/g," ").trim().slice(0,10);S.tname=v;i.value=v;applyName();try{localStorage.setItem("ldq_tname_"+ACCT,v);}catch(e){}save();let pp=null;try{pp=window.pushProfileNow&&window.pushProfileNow();}catch(e){}const nm=$("tnMsg");nm.textContent="✅ 저장됐어요! "+(v?"이름이 「"+v+"」(으)로 바뀌었어요.":"기본 이름으로 돌아갔어요.");nm.style.cssText="font-weight:700;color:var(--good,#1b7f4a)";const b=$("tnSave");const ob="저장";b.textContent="✅ 저장됨";b.disabled=true;setTimeout(()=>{b.textContent=ob;b.disabled=false;},1800);try{toast("✅ 이름이 저장됐어요");}catch(e){}if(pp&&pp.then)pp.then(ok=>{nm.textContent+=ok?" (서버에도 저장됨)":" (서버 저장은 실패했어요. 이 기기에는 저장됨)";}).catch(()=>{});}
+function initNick(){const i=$("tnIn");if(i&&document.activeElement!==i)i.value=S.tname||"";}
+document.addEventListener("click",e=>{const t=e.target;if(t&&t.closest&&t.closest("#tnSave"))tnSave();});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target&&e.target.id==="tnIn"){e.preventDefault();tnSave();}});
 function boot(acct){ACCT=acct;bgm(null);askPerms();setTimeout(()=>{try{if(S.partner){loadAtlas("pokemon/"+S.partner);loadAtlas("pokemon/back/"+S.partner);}}catch(e){}},0);applyName();initNick();$("loginOv").classList.add("hidden");$("loginMsg").textContent="";loadLocal();renderAll();let t0="adv";try{t0=localStorage.getItem("ldq_tab")||"adv";}catch(e){}if(location.hash){const h=location.hash.slice(1);if($("v-"+h))t0=h;}show(t0);placePlayer(true,true);initDb();applyLook();dailyBonus();runFlow();}
 function dailyBonus(){const t=todayStr();day().login=1;if(S.lastLogin===t)return;const prev=S.lastLogin;S.lastLogin=t;let n=1;if(prev){const d=daysBetween(prev,t);n=d===1?Math.min(7,(S.loginStreak||0)+1):1;}S.loginStreak=n;const c=10*n;addCoins(c);save();hud();setTimeout(()=>toast("🎁 오늘의 접속 보너스! 코인 +"+c+" ("+n+"일 연속)"),1800);}
 /* ---- flow: intro -> character -> starter ---- */
