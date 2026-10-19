@@ -361,7 +361,7 @@ details.adv[open] summary::after{content:"▴"}
       <button class="tab" role="tab" data-v="dex" aria-selected="false">도감</button>
       <button class="tab" role="tab" data-v="train" aria-selected="false">훈련</button>
       <button class="tab" role="tab" data-v="shop" aria-selected="false">상점</button>
-      <button class="tab" role="tab" data-v="friends" aria-selected="false">친구</button>
+      <button class="tab" role="tab" data-v="friends" aria-selected="false">친구<b id="newsDot" class="hidden" style="background:#e5383b;color:#fff;border-radius:50%;padding:0 6px;margin-left:5px;font-size:11px;line-height:16px;display:inline-block">!</b></button>
       <button class="tab" role="tab" data-v="log" aria-selected="false">기록</button>
     </nav>
   </div>
@@ -8383,7 +8383,8 @@ const ANNQ=[];let annBusy=false;
 function showBanner(text){ANNQ.push(text);if(!annBusy)nextBanner();}
 function nextBanner(){const t=ANNQ.shift();const b=$("annBanner");if(!t||!b){annBusy=false;return;}annBusy=true;b.textContent=t;b.classList.remove("hidden");b.style.animation="none";void b.offsetWidth;b.style.animation="";try{sfx.win();}catch(e){}setTimeout(()=>{b.classList.add("hidden");setTimeout(nextBanner,300);},6500);}
 function gcLegendAnnounce(o){const who=(typeof WHO!=="undefined"&&WHO[ACCT])||ACCT||"트레이너";const text="축하합니다! "+who+"님이 전설 "+NAMES[o.no-1]+"을(를) 뽑았습니다!";showBanner("🎉 "+text);try{if(window.LDQ_NET&&window.LDQ_NET.postAnnounce){const pr=window.LDQ_NET.postAnnounce({kind:"legend",text,account:ACCT});if(pr&&pr.catch)pr.catch(()=>{});}}catch(e){}}
-async function pollAnnounce(){try{if(!window.LDQ_NET||!window.LDQ_NET.listAnnouncements||!ACCT)return;const since=new Date(Date.now()-15*60000).toISOString();const rows=await window.LDQ_NET.listAnnouncements(since);S.annSeen=S.annSeen||"";let newest=S.annSeen;for(const r of rows.slice().reverse()){if(r.account===ACCT)continue;if(r.created_at>S.annSeen){showBanner("🎉 "+r.text);if(r.created_at>newest)newest=r.created_at;}}if(newest!==S.annSeen){S.annSeen=newest;save();}}catch(e){}}
+function updateNewsDot(){const d=$("newsDot");if(!d)return;const un=(FR.news||[]).some(r=>r.account!==ACCT&&r.created_at>(S.newsSeen||""));d.classList.toggle("hidden",!un||view==="friends");}
+async function pollAnnounce(){try{if(!window.LDQ_NET||!window.LDQ_NET.listAnnouncements||!ACCT)return;const rows=await window.LDQ_NET.listAnnouncements(new Date(Date.now()-7*86400000).toISOString());FR.news=rows||[];const cutoff=new Date(Date.now()-15*60000).toISOString();S.annSeen=S.annSeen||"";let newest=S.annSeen;for(const r of rows.slice().reverse()){if(r.account===ACCT)continue;if(r.created_at>S.annSeen&&r.created_at>cutoff){showBanner("🎉 "+r.text);}if(r.created_at>newest)newest=r.created_at;}if(newest!==S.annSeen){S.annSeen=newest;save();}updateNewsDot();if(view==="friends")renderFriends();}catch(e){}}
 setInterval(pollAnnounce,45000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pollAnnounce();});setTimeout(pollAnnounce,9000);
 function gcCinematic(out,done){const ov=$("gcOv"),cv=$("gcCv");if(!ov||!cv){done();return;}
  ov.classList.remove("hidden");const ctx=cv.getContext("2d");const W=cv.width,H=cv.height;
@@ -13119,14 +13120,19 @@ function acquire(no,obj){const c=S.caught[no];if(!c){S.caught[no]=obj;return tru
 function giveAway(no){const c=S.caught[no];if(!c)return;c.gone=Date.now();delete c.sent;S.party=(S.party||[]).filter(x=>x!==no);if(S.partner===no)S.partner=null;ensureParty();}
 function receiveMon(no,lv,nick){const now=Date.now();const c=S.caught[no];if(c){delete c.gone;c.got=now;c.lv=Math.max(c.lv||0,lv||5);if(nick&&!c.nick)c.nick=nick;}else S.caught[no]={at:todayStr(),where:"교환",lv:lv||5,xp:0,got:now,nick:nick||undefined};save();try{if(window.pushProfileNow)window.pushProfileNow();}catch(e){}}
 const tmo=(p,ms)=>Promise.race([Promise.resolve(p),new Promise((_,rj)=>setTimeout(()=>rj(new Error("timeout")),ms))]);
-async function loadFriends(){const n=NET();if(!n){FR.err="이 기능은 서버에 연결된 웹사이트에서 쓸 수 있어요.";return;}FR.busy=true;FR.err="";try{if(window.pushProfileNow){try{await tmo(window.pushProfileNow(),6000);}catch(e){}}const [pf,tr]=await Promise.all([tmo(n.listProfiles(),10000),tmo(n.listTrades(),10000)]);FR.profiles=pf||[];FR.trades=tr||[];FR.loaded=true;}catch(e){FR.err=(e&&e.message&&/relation|does not exist|schema cache|404/i.test(e.message))?"친구·교환 기능을 켜려면 서버에 테이블을 한 번 만들어야 해요. (관리자용 안내 SQL을 실행해 주세요)":((e&&/timeout/.test(e.message))?"서버 응답이 없어요. 새로고침을 눌러 다시 시도해 주세요.":"친구 정보를 불러오지 못했어요. 새로고침을 눌러 주세요.")+" ("+String((e&&e.message)||e).slice(0,80)+")";}FR.busy=false;}
+async function loadFriends(){const n=NET();if(!n){FR.err="이 기능은 서버에 연결된 웹사이트에서 쓸 수 있어요.";return;}FR.busy=true;FR.err="";try{if(window.pushProfileNow){try{await tmo(window.pushProfileNow(),6000);}catch(e){}}const [pf,tr]=await Promise.all([tmo(n.listProfiles(),10000),tmo(n.listTrades(),10000)]);FR.profiles=pf||[];FR.trades=tr||[];FR.loaded=true;try{FR.news=await tmo(n.listAnnouncements(new Date(Date.now()-7*86400000).toISOString()),8000)||[];}catch(e){FR.news=FR.news||[];}}catch(e){FR.err=(e&&e.message&&/relation|does not exist|schema cache|404/i.test(e.message))?"친구·교환 기능을 켜려면 서버에 테이블을 한 번 만들어야 해요. (관리자용 안내 SQL을 실행해 주세요)":((e&&/timeout/.test(e.message))?"서버 응답이 없어요. 새로고침을 눌러 다시 시도해 주세요.":"친구 정보를 불러오지 못했어요. 새로고침을 눌러 주세요.")+" ("+String((e&&e.message)||e).slice(0,80)+")";}FR.busy=false;}
 async function syncTrades(quiet){const n=NET();if(!n||!ACCT)return;try{const tr=await n.listTrades();FR.trades=tr||[];let changed=false;for(const t of FR.trades){if(t.status==="accepted"&&t.from_account===ACCT&&!t.from_applied){if(isOwned(t.offer_no))giveAway(t.offer_no);receiveMon(t.want_no,t.want_lv,t.want_nick);try{await n.updateTrade(t.id,{from_applied:true});}catch(e){}t.from_applied=true;changed=true;if(!quiet)toast("🔁 "+NAMES[t.offer_no-1]+" ↔ "+NAMES[t.want_no-1]+" 교환이 성사됐어요!");}}
   if(changed){save();hud();try{renderAll();}catch(e){}}
   const inc=FR.trades.filter(t=>t.status==="pending"&&t.to_account===ACCT).length;if(inc&&!quiet)toast("🔁 교환 제안 "+inc+"건이 도착했어요 (친구 탭)");}catch(e){}}
 window.syncTrades=syncTrades;
 function iconBtns(list,cls,sel){return list.map(n=>'<button class="btn sm '+(sel===n?'primary':'')+'" data-'+cls+'="'+n+'" style="padding:2px 4px"><canvas width="52" height="44" data-ic="'+n+'"></canvas><div style="font-size:10px">'+esc(myName(n)===NAMES[n-1]?NAMES[n-1]:NAMES[n-1])+'</div></button>').join("");}
 function paintIcons(root){root.querySelectorAll("canvas[data-ic]").forEach(cv=>{const x=cv.getContext("2d");x.clearRect(0,0,cv.width,cv.height);try{drawIcon(x,+cv.dataset.ic,26,42,1.1,false);}catch(e){}});}
-function renderFriends(){const cv=$("frCard");if(cv)drawCard(cv,myProfile());const box=$("frNet");if(!box)return;
+function agoTxt(ts){const m=Math.max(0,Math.round((Date.now()-new Date(ts).getTime())/60000));return m<1?"방금":m<60?m+"분 전":m<1440?Math.floor(m/60)+"시간 전":Math.floor(m/1440)+"일 전";}
+function rankNewsHtml(){const rk=(FR.profiles||[]).slice().sort((a,b)=>((b.stage_cleared||0)-(a.stage_cleared||0))||((b.caught||0)-(a.caught||0))||((b.wins||0)-(a.wins||0)));
+ let h='<h3 style="margin:6px 0 0;font-size:15px">📢 소식</h3>';
+ const nw=(FR.news||[]).slice(0,10);h+=nw.length?'<div class="stack" style="gap:4px">'+nw.map(r=>'<div class="small" style="padding:6px 8px;background:var(--soft)">🎉 '+esc(r.text)+' <span class="muted">· '+agoTxt(r.created_at)+'</span></div>').join("")+'</div>':'<div class="small muted">아직 소식이 없어요. 누군가 전설을 뽑으면 여기에 떠요.</div>';
+ h+='<h3 style="margin:10px 0 0;font-size:15px">🏆 랭킹</h3><div class="stack" style="gap:4px">'+(rk.length?rk.map((p,i)=>'<div class="pslot" style="padding:6px 10px;gap:8px"><b style="min-width:34px">'+(i+1)+'위</b><div class="pbody" style="flex:1;min-width:0"><b>'+esc(WHO[p.account]||p.account)+(p.account===ACCT?' (나)':'')+'</b><div class="small muted">클리어 '+(p.stage_cleared||0)+'/'+STAGES.length+' · 도감 '+(p.caught||0)+'/'+NMON+' · 승리 '+(p.wins||0)+'</div></div></div>').join(""):'<div class="small muted">랭킹을 불러오는 중이에요.</div>')+'</div>';return h;}
+function renderFriends(){try{if((FR.news||[]).length){const nw=FR.news.filter(r=>r.account!==ACCT).map(r=>r.created_at).sort().pop();if(nw&&nw>(S.newsSeen||"")){S.newsSeen=nw;save();}}updateNewsDot();}catch(e){}const cv=$("frCard");if(cv)drawCard(cv,myProfile());const box=$("frNet");if(!box)return;
  if(!FR.loaded&&!FR.busy)loadFriends().then(()=>{if(view==="friends")renderFriends();});
  const me=myProfile();let h='';
  if(!NET()){box.innerHTML='<h3 style="margin:0;font-size:16px">👥 친구 · 교환</h3><div class="small muted">친구 보기와 교환은 서버에 연결된 웹사이트(yoohoseon.github.io/pokepoke)에서 쓸 수 있어요. 위의 자랑하기 카드는 어디서나 쓸 수 있어요.</div>';return;}
@@ -13134,7 +13140,7 @@ function renderFriends(){const cv=$("frCard");if(cv)drawCard(cv,myProfile());con
  if(FR.err)h+='<div class="notice">'+esc(FR.err)+'</div>';
  else if(FR.busy&&!FR.loaded)h+='<div class="small muted">불러오는 중<span class="dots"></span></div>';
  const others=FR.profiles.filter(p=>p.account!==ACCT);
- if(FR.loaded&&!FR.err){
+ if(FR.loaded&&!FR.err){h+=rankNewsHtml();
   h+='<div class="stack" style="gap:8px">'+(others.length?others.map(p=>'<div class="pslot"><div class="pbody" style="flex:1;min-width:0"><b>'+esc(WHO[p.account]||p.account)+' 트레이너</b><div class="small muted">클리어 '+p.stage_cleared+'/'+STAGES.length+' · 도감 '+p.caught+'/'+NMON+' · 연속 '+p.streak+'일 · 푼 문제 '+p.questions+' · 문법 '+p.lessons+'/'+GRAMMAR.length+'</div><div class="row" style="gap:2px">'+(p.party||[]).slice(0,5).map(m=>'<span style="text-align:center"><canvas width="52" height="44" data-ic="'+m.no+'"></canvas><div style="font-size:10px">'+esc(String(m.nick||NAMES[m.no-1]).slice(0,6))+' Lv'+m.lv+'</div></span>').join("")+'</div></div><div class="pbtns"><button class="btn sm primary" data-trade-to="'+p.user_id+'">🔁 교환 제안</button></div></div>').join(""):'<div class="small muted">아직 다른 친구가 로그인한 기록이 없어요. 친구가 한 번 접속하면 여기에 나타나요.</div>')+'</div>';
   const inc=FR.trades.filter(t=>t.status==="pending"&&t.to_account===ACCT),out=FR.trades.filter(t=>t.status==="pending"&&t.from_account===ACCT),done=FR.trades.filter(t=>t.status!=="pending").slice(0,6);
   h+='<h3 style="margin:8px 0 0;font-size:15px">📬 교환함</h3>';
@@ -13247,7 +13253,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
   async listProfiles(){const r=await sb.from("profiles").select("*").order("updated_at",{ascending:false}).limit(20);if(r.error)throw r.error;return r.data;},
   async listTrades(){const uid=await myUid();const r=await sb.from("trades").select("*").or("from_user.eq."+uid+",to_user.eq."+uid).order("created_at",{ascending:false}).limit(40);if(r.error)throw r.error;return r.data;},
   async createTrade(t){const uid=await myUid();const r=await sb.from("trades").insert(Object.assign({from_user:uid},t));if(r.error)throw r.error;},
-  async listAnnouncements(since){const r=await sb.from("announcements").select("*").gte("created_at",since).order("created_at",{ascending:false}).limit(10);if(r.error)throw r.error;return r.data;},
+  async listAnnouncements(since){const r=await sb.from("announcements").select("*").gte("created_at",since).order("created_at",{ascending:false}).limit(20);if(r.error)throw r.error;return r.data;},
   async postAnnounce(a){const uid=await myUid();const r=await sb.from("announcements").insert({user_id:uid,account:a.account,kind:a.kind,text:a.text});if(r.error)throw r.error;},
   async updateTrade(id,patch){const r=await sb.from("trades").update(Object.assign({},patch,{updated_at:new Date().toISOString()})).eq("id",id);if(r.error)throw r.error;}
  };
