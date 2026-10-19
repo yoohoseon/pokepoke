@@ -12742,8 +12742,30 @@ function makeQ0(cat,tier,forceP){tier=tier||0;if(!forceP){const xq=makeExtraQ(ti
   if(type==="mc_ko")return{type,p,prompt:p.en,sub:"들은 문장의 뜻은?",opts:shuffle([p.ko].concat(others.map(o=>o.ko))),ans:p.ko,speak:true};
   if(type==="blank"){const cand=blankCands(words);const c=cand[rnd(cand.length)];const key=cleanW(c.w);const dis=blankDis(key,/^[A-Z]/.test(key),c.i>0?cleanW(words[c.i-1]).toLowerCase():"");const shown=words.map((w,i)=>i===c.i?w.replace(key,"_____"):w).join(" ");return{type,p,prompt:shown,sub:"빈칸에 들어갈 단어는? · "+p.ko,opts:shuffle([key].concat(dis)),ans:key};}
   return{type,p,prompt:p.ko,sub:"단어를 순서대로 눌러 문장을 만드세요",words:shuffle(orderTokens(words)),ans:p.en};}
+
+function hintSteps(q){const E={t:"elim"};const w=String(q.ans||"").split(/\s+/).filter(Boolean);const first=w[0]||"";const T=v=>({t:"txt",v});
+ switch(q.type){
+ case"mc_en":return[T("첫 단어는 「"+first+"」예요"),E,E];
+ case"mc_ko":return[E,E,T("들은 문장은 「"+((q.p&&q.p.en)||"")+"」였어요")];
+ case"listen":return[E,T("뜻은 「"+((q.p&&q.p.ko)||"")+"」예요"),E];
+ case"blank":return[T("첫 글자는 「"+String(q.ans||"?")[0].toUpperCase()+"」, 모두 "+String(q.ans||"").length+"글자예요"),E,E];
+ case"vocab":return[E,T("예문: "+((q.p&&q.p.ex)||"")),E];
+ case"vocab_rev":return[T("첫 글자는 「"+String(q.ans||"?")[0].toUpperCase()+"」, 모두 "+String(q.ans||"").length+"글자예요"),E,E];
+ case"reply":return[E,E,T("첫 단어는 「"+first+"」예요")];
+ case"order":return[T("첫 단어는 「"+first+"」예요"),T("마지막 단어는 「"+(w[w.length-1]||"")+"」예요"),T("앞의 두 단어는 「"+w.slice(0,2).join(" ")+"」예요")];
+ case"dict":return[T("모두 "+w.length+"단어, 첫 단어는 「"+first+"」예요"),T("앞 3단어는 「"+w.slice(0,3).join(" ")+"」예요"),T("앞 "+Math.ceil(w.length*0.7)+"단어는 「"+w.slice(0,Math.ceil(w.length*0.7)).join(" ")+"」예요")];
+ case"ai":{const iq=q.iq||{};const m0=(iq.m&&iq.m[0])||"";return[T("핵심 단어: "+((iq.kw||[]).slice(0,4).join(", ")||"없음")),T("이렇게 시작해 보세요: "+m0.split(/\s+/).slice(0,4).join(" ")+"…"),T("모범 답안 일부: "+m0.split(/\s+/).slice(0,10).join(" ")+"…")];}
+ default:return[E,T(hintFor(q))];}}
+function useHint(q,hb){const b=B;if(!b)return;if(b._hq!==q){b._hq=q;b._hn=0;b._ht=[];}
+ if(b.hints<=0){$("hintTxt").textContent="이 배틀의 힌트를 다 썼습니다.";return;}
+ const steps=hintSteps(q);let tries=0;
+ while(b._hn<steps.length&&tries<steps.length){const st=steps[b._hn];b._hn++;tries++;
+  if(st.t==="elim"){const opts=[...document.querySelectorAll("#qArea .opt")].filter(x=>!x.disabled&&x.textContent!==q.ans);if(!opts.length)continue;const o=opts[rnd(opts.length)];o.disabled=true;o.classList.add("no");o.style.opacity=".35";o.style.textDecoration="line-through";b._ht.push("오답 하나를 지웠어요");}
+  else{b._ht.push(st.v);}
+  b.hints--;hb.textContent="힌트 ("+b.hints+")";$("hintTxt").textContent="이박사: "+b._ht.join(" · ");return;}
+ $("hintTxt").textContent="이박사: "+(b._ht.length?b._ht.join(" · ")+" · ":"")+"더 줄 힌트가 없어요. 정답을 믿고 골라 보세요!";}
 function hintFor(q){if(q.type==="vocab")return "예문: "+((q.p&&q.p.ex)||"");if(q.type==="vocab_rev")return "첫 글자 "+q.ans[0].toUpperCase()+", "+q.ans.length+"글자";if(q.type==="reply")return "첫 단어: "+q.ans.split(/\s+/)[0]+" … (뜻: "+((q.p&&q.p.ko)||"")+")";if(q.type==="mc_en"||q.type==="listen"||q.type==="dict")return "첫 단어: "+q.ans.split(/\s+/)[0]+" … (뜻: "+q.p.ko+")";if(q.type==="mc_ko")return "영어 문장: "+q.p.en;if(q.type==="blank")return "첫 글자 "+q.ans[0].toUpperCase()+", "+q.ans.length+"글자 · 뜻: "+q.p.ko;if(q.type==="order")return "첫 단어: "+q.ans.split(/\s+/)[0]+" → 마지막: "+q.ans.split(/\s+/).slice(-1)[0];if(q.type==="ai")return q.hint||q.ko;return "";}
-function renderQ(q){const A=$("qArea");$("qInfo").innerHTML='문제 '+(B.n)+' · '+({mc_en:"뜻 고르기",mc_ko:"듣고 뜻 고르기",listen:"듣고 영어 고르기",vocab:"단어 뜻 고르기",vocab_rev:"영단어 고르기",reply:"대화 응답 고르기",blank:"빈칸 채우기",order:"단어 배열",dict:"받아쓰기",ai:"면접 질문"}[q.type])+(B.combo>=2?' · <b class="combo">🔥 ×'+B.combo+'</b>':'')+' · <button class="btn ghost sm" id="hintQ">힌트 ('+B.hints+')</button> <span id="hintTxt"></span>';setTimeout(()=>{const hb=$("hintQ");if(hb)hb.onclick=()=>{if(B.hints<=0){$("hintTxt").textContent="이 배틀의 힌트를 다 썼습니다.";return;}B.hints--;hb.textContent="힌트 ("+B.hints+")";$("hintTxt").textContent="이박사: "+hintFor(q);};},0);
+function renderQ(q){const A=$("qArea");if(B&&B._hq!==q){B._hq=q;B._hn=0;B._ht=[];}$("qInfo").innerHTML='문제 '+(B.n)+' · '+({mc_en:"뜻 고르기",mc_ko:"듣고 뜻 고르기",listen:"듣고 영어 고르기",vocab:"단어 뜻 고르기",vocab_rev:"영단어 고르기",reply:"대화 응답 고르기",blank:"빈칸 채우기",order:"단어 배열",dict:"받아쓰기",ai:"면접 질문"}[q.type])+(B.combo>=2?' · <b class="combo">🔥 ×'+B.combo+'</b>':'')+' · <button class="btn ghost sm" id="hintQ">힌트 ('+B.hints+')</button> <span id="hintTxt"></span>';setTimeout(()=>{const hb=$("hintQ");if(hb)hb.onclick=()=>useHint(q,hb);},0);
   if(q.type==="order"){A.innerHTML='<div class="small muted">'+esc(q.sub)+'</div><div class="q">'+esc(q.prompt)+'</div><div class="chips ans" id="ansChips"></div><div class="chips" id="poolChips">'+q.words.map((w,i)=>'<button data-w="'+i+'">'+esc(w)+'</button>').join("")+'</div><div class="row"><button class="btn primary" id="subBtn">공격!</button><button class="btn sm" id="clrBtn">지우기</button></div>';
     const picked=[];const pool=$("poolChips"),ans=$("ansChips");pool.onclick=e=>{const b=e.target.closest("button");if(!b)return;picked.push(q.words[+b.dataset.w]);b.disabled=true;b.style.visibility="hidden";ans.innerHTML=picked.map(w=>'<button disabled>'+esc(w)+'</button>').join("");};$("clrBtn").onclick=()=>{picked.length=0;ans.innerHTML="";pool.querySelectorAll("button").forEach(b=>{b.disabled=false;b.style.visibility="";});};
     $("subBtn").onclick=()=>{const got=picked.join(" ");const ok=got.replace(/[^A-Za-z0-9']/g,"").toLowerCase()===q.ans.replace(/[^A-Za-z0-9']/g,"").toLowerCase();$("subBtn").disabled=true;ans.classList.add(ok?"ok":"no");resolve(ok,q.ans);};return;}
