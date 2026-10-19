@@ -50,3 +50,18 @@ drop policy if exists "trades update" on public.trades;
 create policy "trades read" on public.trades for select to authenticated using (auth.uid() in (from_user, to_user));
 create policy "trades insert" on public.trades for insert to authenticated with check (auth.uid() = from_user and status = 'pending');
 create policy "trades update" on public.trades for update to authenticated using (auth.uid() in (from_user, to_user)) with check (auth.uid() in (from_user, to_user));
+
+-- 3) 전체 공지(전설 가챠 축하): 로그인한 사람은 모두 읽을 수 있고, 쓰기는 본인 이름으로만 가능합니다.
+create table if not exists public.announcements (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  account     text not null,
+  kind        text not null default 'legend',
+  text        text not null,
+  created_at  timestamptz not null default now()
+);
+alter table public.announcements enable row level security;
+drop policy if exists "announcements read" on public.announcements;
+drop policy if exists "announcements insert" on public.announcements;
+create policy "announcements read" on public.announcements for select to authenticated using (true);
+create policy "announcements insert" on public.announcements for insert to authenticated with check (auth.uid() = user_id);

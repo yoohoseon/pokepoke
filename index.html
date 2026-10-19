@@ -296,6 +296,8 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--mu
 .sum{font-size:13px;display:grid;gap:4px;margin:8px 0}.sum div{display:flex;flex-wrap:wrap;gap:2px 6px;align-items:baseline}.sum .ok{color:#1b7f4a}.sum .no{color:#b3261e}.sum .ko{color:var(--muted);font-size:12px;flex-basis:100%;padding-left:18px}
 .mrow{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--soft);border:2px solid var(--line);font-size:13px}.mrow .mt{flex:1;min-width:0}.mrow .mt b{display:block}.mrow .bar2{height:6px;background:var(--line);margin-top:4px}.mrow .bar2 i{display:block;height:100%;background:var(--accent)}.mrow.done{opacity:.6}
 .shoplist{display:grid;gap:8px}.shopitem{display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--surface);border:3px solid var(--line);box-shadow:3px 3px 0 var(--line)}.shopitem .ic{font-size:28px;flex:0 0 auto}.shopitem .tx{flex:1;min-width:0}.shopitem .tx b{display:block}.shopitem .tx small{color:var(--muted);display:block}.shopitem button{flex:0 0 auto;white-space:nowrap}.shopitem button:disabled{opacity:.45}
+#gcOv{position:fixed;inset:0;z-index:9999;background:#0b0d16;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}#gcOv.hidden{display:none}#gcOv canvas{width:min(100vw,420px);max-height:82vh;height:auto;image-rendering:auto}
+#annBanner{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translateX(-50%);z-index:9998;max-width:92vw;padding:12px 18px;background:linear-gradient(90deg,#8a5a00,#f2c14e,#8a5a00);color:#1b1200;font-weight:800;font-size:15px;border:3px solid #fff4b8;box-shadow:0 0 18px #f2c14e;text-align:center;animation:annin .5s both}#annBanner.hidden{display:none}@keyframes annin{from{transform:translate(-50%,-80px)}to{transform:translate(-50%,0)}}
 .gcres{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px}.gcard{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 3px;border:3px solid var(--c,#888);background:var(--surface);font-size:11px;text-align:center;animation:gcin .35s both}.gcard b{font-size:12px}.gcard small{font-size:10px;opacity:.8;line-height:1.25}.gcard.L{box-shadow:0 0 0 2px #ffe27a inset}@keyframes gcin{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
 .pstrip{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.pst{display:flex;flex-direction:column;align-items:center;gap:1px;width:64px;padding:4px 3px;border:2px solid var(--line);background:var(--surface);font:inherit;color:inherit;cursor:pointer}.pst small{font-size:10px;line-height:1.2;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pst .hpbar{width:100%;height:5px}.pst.kod{opacity:.6}.pst .hpn{font-weight:700}
 .statrow{display:flex;justify-content:space-between;gap:8px;font-size:13px}.statrow b{white-space:nowrap}.xpbar{height:6px;background:var(--soft);border:1px solid var(--line)}.xpbar i{display:block;height:100%;background:var(--accent)}.useb{display:flex;flex-wrap:wrap;gap:6px}
@@ -534,6 +536,8 @@ details.adv[open] summary::after{content:"▴"}
   </div>
   <div id="missionBox" class="stack" style="gap:6px"></div><div class="shoplist" id="shopList"></div><div class="small muted" id="shopNote"></div></div>
 </section>
+<div id="gcOv" class="hidden"><canvas id="gcCv" width="360" height="520"></canvas><button class="btn sm" id="gcSkip">건너뛰기</button></div>
+<div id="annBanner" class="hidden"></div>
 <section class="view hidden" id="v-friends">
   <div class="box stack"><h2 style="margin:0;font-size:18px">🏅 내 트레이너 카드</h2>
     <canvas id="frCard" width="360" height="470" style="width:100%;max-width:360px;height:auto;align-self:center;border:2px solid var(--line)"></canvas>
@@ -811,7 +815,7 @@ function stageMin(no,depth){depth=depth||0;if(depth>4)return 1;let best=1;for(co
 const need=lv=>15+lv*5;
 function mon(n){const c=S.caught[n];if(!c)return null;if(typeof c.lv!=="number"||isNaN(c.lv)){c.lv=5;c.xp=0;}if(typeof c.xp!=="number"||isNaN(c.xp))c.xp=0;return c;}
 let evoQueue=[];
-function maxHp(n){const c=S.caught[n];const lv=c&&typeof c.lv==="number"?c.lv:5;return (3+Math.min(3,Math.floor(lv/12)))*2;}
+function maxHp(n){const c=S.caught[n];const lv=c&&typeof c.lv==="number"?c.lv:5;return 6+2*Math.floor(lv/4);}
 function curHp(n){const c=S.caught[n];if(!c)return 0;const mx=maxHp(n);if(typeof c.hp!=="number"||isNaN(c.hp))return mx;return Math.max(0,Math.min(mx,Math.round(c.hp)));}
 function setHp(n,v){const c=S.caught[n];if(!c)return;c.hp=Math.max(0,Math.min(maxHp(n),Math.round(v)));}
 function healAll(){Object.keys(S.caught).forEach(k=>{if(S.caught[k])delete S.caught[k].hp;});}
@@ -828,7 +832,7 @@ function hpGift(){if(S.intro&&!S.gcGift){S.gcGift=1;S.freeTen=(S.freeTen||0)+1;s
 function regenTick(){S.regenSteps=(S.regenSteps||0)+1;if(S.regenSteps<10)return;S.regenSteps=0;let ch=false;S.party.forEach(n=>{const h=curHp(n);if(h>0&&h<maxHp(n)){setHp(n,h+1);ch=true;}});if(ch){try{renderStrip();}catch(e){}}}
 function hpBar(n,cls){const h=curHp(n),m=maxHp(n),f=h/m;return '<div class="hpbar"><i style="width:'+Math.round(f*100)+'%;background:'+(h<=0?'var(--bad)':f>0.5?'var(--good)':f>0.2?'var(--gold)':'var(--bad)')+'"></i></div>';}
 function renderStrip(){const el=$("partyStrip");if(!el)return;ensureParty();el.innerHTML=S.party.map(n=>{const h=curHp(n),m=maxHp(n);return '<button class="pst'+(h<=0?' kod':'')+'" data-stat="'+n+'"><canvas width="44" height="34" data-sn="'+n+'"></canvas><small>'+esc(myName(n))+'</small>'+hpBar(n)+'<small class="hpn">'+(h<=0?'기절':h+'/'+m)+'</small></button>';}).join("");el.querySelectorAll("canvas[data-sn]").forEach(cv=>{try{drawIcon(cv.getContext("2d"),+cv.dataset.sn,22,32,1.4,false);}catch(e){}});}
-function gainXpTo(n,amount){const c=n&&mon(n);if(!c)return;c.xp+=amount;let up=false;while(c.xp>=need(c.lv)){c.xp-=need(c.lv);c.lv++;up=true;}if(up){sfx.ok();toast(myName(n)+" Lv "+c.lv+"!");}const ev=EVO[n];if(ev&&c.lv>=ev[1]&&!c.stop&&!evoQueue.includes(n))evoQueue.push(n);save();hud();}
+function gainXpTo(n,amount){const c=n&&mon(n);if(!c)return;const mx0=maxHp(n);c.xp+=amount;let up=false;while(c.xp>=need(c.lv)){c.xp-=need(c.lv);c.lv++;up=true;}if(up){sfx.ok();const gain=maxHp(n)-mx0;if(gain>0&&typeof c.hp==="number"&&c.hp>0)c.hp=Math.min(maxHp(n),c.hp+gain);toast(myName(n)+" Lv "+c.lv+"!"+(gain>0?" 체력 +"+gain:""));}const ev=EVO[n];if(ev&&c.lv>=ev[1]&&!c.stop&&!evoQueue.includes(n))evoQueue.push(n);save();hud();}
 function gainXp(amount){gainXpTo(S.partner,amount);}
 function awardXp(amount){const b=B;if(!b){gainXp(amount);return;}const set=new Set(b.entered?Array.from(b.entered):[b.my]);set.add(b.my);set.forEach(n=>gainXpTo(n,n===b.my?amount:Math.round(amount*0.5)));}
 function maybeEvo(){if(B||!evoQueue.length)return;const n=evoQueue.shift();const c=mon(n);const ev=EVO[n];if(!c||!ev||c.lv<ev[1]||c.stop||!S.caught[n]){maybeEvo();return;}startEvo(n,ev[0]);}
@@ -8371,6 +8375,52 @@ const GC_ORDER=["C","U","R","E","L"];const GC_NAME={C:"일반",U:"고급",R:"희
 let GC_POOL=null;const gcBand=n=>{const b=BST[n-1];return b>=580?"L":b>=540?"E":b>=450?"R":b>=350?"U":"C";};
 function gcPool(){if(GC_POOL)return GC_POOL;const p={C:[],U:[],R:[],E:[],L:[]};for(let n=1;n<=NMON;n++)p[gcBand(n)].push(n);GC_POOL=p;return p;}
 function gcBandRoll(force){let band="C";const r=Math.random();let acc=0;for(const [k,pr] of GC_RATES){acc+=pr;if(r<acc){band=k;break;}}if(force&&GC_ORDER.indexOf(band)<GC_ORDER.indexOf(force))band=force;return band;}
+
+/* ---------- 가챠 연출 + 전체 공지 ---------- */
+const ANNQ=[];let annBusy=false;
+function showBanner(text){ANNQ.push(text);if(!annBusy)nextBanner();}
+function nextBanner(){const t=ANNQ.shift();const b=$("annBanner");if(!t||!b){annBusy=false;return;}annBusy=true;b.textContent=t;b.classList.remove("hidden");b.style.animation="none";void b.offsetWidth;b.style.animation="";try{sfx.win();}catch(e){}setTimeout(()=>{b.classList.add("hidden");setTimeout(nextBanner,300);},6500);}
+function gcLegendAnnounce(o){const who=(typeof WHO!=="undefined"&&WHO[ACCT])||ACCT||"트레이너";const text="축하합니다! "+who+"님이 전설 "+NAMES[o.no-1]+"을(를) 뽑았습니다!";showBanner("🎉 "+text);try{if(window.LDQ_NET&&window.LDQ_NET.postAnnounce){const pr=window.LDQ_NET.postAnnounce({kind:"legend",text,account:ACCT});if(pr&&pr.catch)pr.catch(()=>{});}}catch(e){}}
+async function pollAnnounce(){try{if(!window.LDQ_NET||!window.LDQ_NET.listAnnouncements||!ACCT)return;const since=new Date(Date.now()-15*60000).toISOString();const rows=await window.LDQ_NET.listAnnouncements(since);S.annSeen=S.annSeen||"";let newest=S.annSeen;for(const r of rows.slice().reverse()){if(r.account===ACCT)continue;if(r.created_at>S.annSeen){showBanner("🎉 "+r.text);if(r.created_at>newest)newest=r.created_at;}}if(newest!==S.annSeen){S.annSeen=newest;save();}}catch(e){}}
+setInterval(pollAnnounce,45000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pollAnnounce();});setTimeout(pollAnnounce,9000);
+function gcCinematic(out,done){const ov=$("gcOv"),cv=$("gcCv");if(!ov||!cv){done();return;}
+ ov.classList.remove("hidden");const ctx=cv.getContext("2d");const W=cv.width,H=cv.height;
+ const best=out.reduce((m,o)=>Math.max(m,GC_ORDER.indexOf(o.band)),0);const colB=GC_COL[GC_ORDER[best]];
+ const seq=out.slice().sort((a,b)=>(GC_ORDER.indexOf(a.band)-GC_ORDER.indexOf(b.band))||((a.shiny?1:0)-(b.shiny?1:0)));
+ const durOf=o=>o.band==="L"?3200:o.band==="E"||o.shiny?2000:o.band==="R"?1300:out.length===1?1600:800;
+ const T_BALL=1700,T_FLASH=400;const starts=[];let acc=T_BALL+T_FLASH;seq.forEach(o=>{starts.push(acc);acc+=durOf(o);});const total=acc+250;
+ let alive=true,raf=0,last=-1;const t0=performance.now();
+ const finish=()=>{if(!alive)return;alive=false;cancelAnimationFrame(raf);ov.classList.add("hidden");done();};
+ $("gcSkip").onclick=finish;
+ const font=(px,w)=>ctx.font=(w||"800")+" "+px+"px 'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif";
+ const glow=(x,y,r,c)=>{const g=ctx.createRadialGradient(x,y,4,x,y,r);g.addColorStop(0,c+"cc");g.addColorStop(1,c+"00");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);};
+ const rays=(t,c,n)=>{ctx.save();ctx.translate(W/2,H/2);ctx.rotate(t/1800);ctx.fillStyle=c+"33";for(let i=0;i<n;i++){ctx.rotate(Math.PI*2/n);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-26,-420);ctx.lineTo(26,-420);ctx.closePath();ctx.fill();}ctx.restore();};
+ const sparks=(t,c,cnt)=>{ctx.fillStyle=c;for(let i=0;i<cnt;i++){const ph=(t/900+i/cnt)%1,r=60+ph*190,a=i*2.399+t/2400;const x=W/2+Math.cos(a)*r,y=H/2+30+Math.sin(a)*r*0.8,sz=(1-ph)*7;ctx.fillRect(x-sz,y-1.5,sz*2,3);ctx.fillRect(x-1.5,y-sz,3,sz*2);}};
+ const loop=now=>{if(!alive)return;try{const t=now-t0;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0b0d16");g.addColorStop(1,"#1b1f33");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  if(t<T_BALL){const p=t/T_BALL;const amp=0.12+p*1.0;glow(W/2,H/2,70+p*200,colB);
+   for(let k=0;k<3;k++){const rp=((t/500+k/3)%1);ctx.strokeStyle=colB+Math.floor((1-rp)*150).toString(16).padStart(2,"0");ctx.lineWidth=3;ctx.beginPath();ctx.arc(W/2,H/2,40+rp*(60+p*140),0,Math.PI*2);ctx.stroke();}
+   ctx.save();ctx.translate(W/2+Math.sin(t/42)*amp*9,H/2-Math.abs(Math.sin(t/105))*22*(0.3+p));ctx.rotate(Math.sin(t/58)*amp*0.5);const sq=0.1*Math.sin(t/36);ctx.scale(1+sq,1-sq);drawPokeball(ctx,10,0,0,false);ctx.restore();
+   font(18,"700");ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText("두근두근"+".".repeat(1+Math.floor(t/300)%3),W/2,H-70);}
+  else if(t<T_BALL+T_FLASH){const p=(t-T_BALL)/T_FLASH;glow(W/2,H/2,300,colB);drawPokeball(ctx,10+p*8,W/2,H/2,true);ctx.fillStyle="rgba(255,255,255,"+(1-p*0.6)+")";ctx.fillRect(0,0,W,H);}
+  else{let idx=0;for(let i=0;i<starts.length;i++)if(t>=starts[i])idx=i;if(t>=total){finish();return;}
+   const o=seq[idx],col=GC_COL[o.band],lt=t-starts[idx];
+   if(idx!==last){last=idx;try{(o.band==="L"?sfx.win:sfx.get)();}catch(e){}}
+   ctx.save();if(o.band==="L"&&lt<900){ctx.translate((Math.random()-0.5)*8,(Math.random()-0.5)*8);}
+   glow(W/2,H/2+30,260,col);if(o.band==="E"||o.band==="L"||o.shiny)rays(t,o.shiny&&o.band!=="L"?"#ffe27a":col,o.band==="L"?14:10);
+   if(o.band==="L"){const hue=(t/6)%360;ctx.fillStyle="hsla("+hue+",90%,60%,0.12)";ctx.fillRect(0,0,W,H);}
+   const u=Math.max(0,(lt-380)/1000);let sx=1,sy=1,sil=false;
+   if(lt<380){sil=true;const w=Math.sin(lt/45)*0.08;sx=0.7+lt/380*0.3+w;sy=0.7+lt/380*0.3-w;}else{const e=Math.exp(-5*u)*Math.cos(17*u);sx=1+0.32*e;sy=1-0.32*e;}
+   ctx.save();ctx.translate(W/2,H/2+120);ctx.scale(sx,sy);const ok=drawMon(ctx,o.no,0,0,{fit:220,t:lt,anim:true,sil:sil,shiny:o.shiny});if(!ok)drawIcon(ctx,o.no,0,0,4,sil);ctx.restore();
+   if(!sil&&(o.shiny||o.band==="E"||o.band==="L"))sparks(t,o.shiny?"#fff2a8":col,16);
+   ctx.textAlign="center";font(13,"700");ctx.fillStyle="#9aa3c7";ctx.fillText((idx+1)+" / "+seq.length,W/2,34);
+   if(!sil){const pop=Math.min(1,u*5);ctx.globalAlpha=pop;font(30,"800");ctx.fillStyle="#fff";ctx.fillText((o.shiny?"✨ ":"")+NAMES[o.no-1],W/2,H-120);font(18,"800");ctx.fillStyle=col;ctx.fillText((o.band==="L"?"★ 전설 ★":GC_NAME[o.band])+(o.shiny?" · 이로치!":""),W/2,H-86);font(14,"700");ctx.fillStyle=o.isNew?"#7CFC9B":"#c9cfe6";ctx.fillText(o.note||"",W/2,H-58);ctx.globalAlpha=1;}
+   ctx.restore();}
+  }catch(e){finish();return;}
+  raf=requestAnimationFrame(loop);};
+ raf=requestAnimationFrame(loop);}
+function gcShowGrid(out){const el=$("gachaRes");if(!el)return;
+ el.innerHTML=out.map((o,i)=>'<div class="gcard '+o.band+'" style="--c:'+GC_COL[o.band]+';animation-delay:'+(i*70)+'ms"><canvas width="60" height="45" data-gn="'+o.no+'"></canvas><b>'+(o.shiny?"✨":"")+esc(NAMES[o.no-1])+'</b><small>'+GC_NAME[o.band]+(o.note?' · '+esc(o.note):'')+'</small></div>').join("");
+ const draw=()=>el.querySelectorAll("canvas[data-gn]").forEach(cv=>{const x=cv.getContext("2d");x.clearRect(0,0,60,45);drawIcon(x,+cv.dataset.gn,30,43,1.4,false);});draw();setTimeout(draw,400);}
 function gcPull(n,free){const cost=free?0:(n===10?1100:120);if(!free&&(S.coins||0)<cost){toast("코인이 부족해요");return;}S.coins-=cost;const out=[];let gotR=false;const rate=window.__gcShiny!=null?window.__gcShiny:1/20;
  for(let i=0;i<n;i++){S.gcPity=(S.gcPity||0)+1;let force=null;if(S.gcPity>=30)force="E";else if(n===10&&i===9&&!gotR)force="R";
   const band=gcBandRoll(force);const pool=gcPool()[band];const no=pool[rnd(pool.length)];const shiny=Math.random()<rate;
@@ -8382,10 +8432,9 @@ function gcPull(n,free){const cost=free?0:(n===10?1100:120);if(!free&&(S.coins||
   out.push({no,band,shiny,note,isNew:!had});}
  S.gcCount=(S.gcCount||0)+n;save();hud();try{renderShop();renderStrip();}catch(e){}
  try{sfx.get();}catch(e){}
- const best=out.reduce((m,o)=>Math.max(m,GC_ORDER.indexOf(o.band)),0);if(best>=3||out.some(o=>o.shiny))toast(out.some(o=>o.shiny)?"✨ 이로치가 나왔어요!":"🌟 "+GC_NAME[GC_ORDER[best]]+" 등급이 나왔어요!");
- const el=$("gachaRes");if(!el)return out;
- el.innerHTML=out.map((o,i)=>'<div class="gcard '+o.band+'" style="--c:'+GC_COL[o.band]+';animation-delay:'+(i*70)+'ms"><canvas width="60" height="45" data-gn="'+o.no+'"></canvas><b>'+(o.shiny?"✨":"")+esc(NAMES[o.no-1])+'</b><small>'+GC_NAME[o.band]+(o.note?' · '+esc(o.note):'')+'</small></div>').join("");
- const draw=()=>el.querySelectorAll("canvas[data-gn]").forEach(cv=>{const x=cv.getContext("2d");x.clearRect(0,0,60,45);drawIcon(x,+cv.dataset.gn,30,43,1.4,false);});draw();setTimeout(draw,400);
+ out.filter(o=>o.band==="L").forEach(o=>gcLegendAnnounce(o));
+ const el0=$("gachaRes");if(el0)el0.innerHTML="";
+ try{gcCinematic(out,()=>gcShowGrid(out));}catch(e){try{$("gcOv").classList.add("hidden");}catch(x){}gcShowGrid(out);}
  return out;}
 function renderGacha(){const info=$("gachaInfo");if(!info)return;const pity=S.gcPity||0;info.textContent="뽑은 횟수 "+(S.gcCount||0)+" · 영웅 보장까지 "+Math.max(0,30-pity)+"회";$("gc1").disabled=(S.coins||0)<120;$("gc10").disabled=(S.coins||0)<1100;{const f=$("gcFree");if(f){f.hidden=!(S.freeTen>0);f.textContent="🎁 무료 10회 뽑기 ("+(S.freeTen||0)+")";}}
  $("gachaRates").textContent="일반 60% · 고급 25% · 희귀 11% · 영웅 3.2% · 전설 0.8% · 이로치 5% · 10회 뽑기는 희귀 이상 1마리 보장 · 30회마다 영웅 이상 보장";}
@@ -13194,6 +13243,8 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
   async listProfiles(){const r=await sb.from("profiles").select("*").order("updated_at",{ascending:false}).limit(20);if(r.error)throw r.error;return r.data;},
   async listTrades(){const uid=await myUid();const r=await sb.from("trades").select("*").or("from_user.eq."+uid+",to_user.eq."+uid).order("created_at",{ascending:false}).limit(40);if(r.error)throw r.error;return r.data;},
   async createTrade(t){const uid=await myUid();const r=await sb.from("trades").insert(Object.assign({from_user:uid},t));if(r.error)throw r.error;},
+  async listAnnouncements(since){const r=await sb.from("announcements").select("*").gte("created_at",since).order("created_at",{ascending:false}).limit(10);if(r.error)throw r.error;return r.data;},
+  async postAnnounce(a){const uid=await myUid();const r=await sb.from("announcements").insert({user_id:uid,account:a.account,kind:a.kind,text:a.text});if(r.error)throw r.error;},
   async updateTrade(id,patch){const r=await sb.from("trades").update(Object.assign({},patch,{updated_at:new Date().toISOString()})).eq("id",id);if(r.error)throw r.error;}
  };
  let lastProf="",lastProfAt=0;
