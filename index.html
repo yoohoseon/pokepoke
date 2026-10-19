@@ -8452,7 +8452,7 @@ function gcShowGrid(out){const el=$("gachaRes");if(!el)return;
  el.innerHTML=out.map((o,i)=>'<div class="gcard '+o.band+'" style="--c:'+GC_COL[o.band]+';animation-delay:'+(i*70)+'ms"><canvas width="60" height="45" data-gn="'+o.no+'"></canvas><b>'+(o.shiny?"✨":"")+esc(NAMES[o.no-1])+'</b><small>'+GC_NAME[o.band]+(o.note?' · '+esc(o.note):'')+'</small></div>').join("");
  const draw=()=>el.querySelectorAll("canvas[data-gn]").forEach(cv=>{const x=cv.getContext("2d");x.clearRect(0,0,60,45);drawIcon(x,+cv.dataset.gn,30,43,1.4,false);});draw();setTimeout(draw,400);}
 function gcPull(n,free){const cost=free?0:(n===10?1100:120);if(!free&&(S.coins||0)<cost){toast("코인이 부족해요");return;}S.coins-=cost;const out=[];let gotR=false;const rate=window.__gcShiny!=null?window.__gcShiny:1/20;
- for(let i=0;i<n;i++){S.gcPity=(S.gcPity||0)+1;let force=null;if(S.gcPity>=50)force="E";else if(n===10&&i===9&&!gotR)force="R";
+ for(let i=0;i<n;i++){S.gcPity=(S.gcPity||0)+1;let force=null;if(S.gcPity>=100)force="E";else if(n===10&&i===9&&!gotR)force="R";
   const band=gcBandRoll(force);const pool=gcPool()[band];const no=pool[rnd(pool.length)];const shiny=Math.random()<rate;
   if(band==="E"||band==="L")S.gcPity=0;if(band==="L")window.__lastLegend=no;if(GC_ORDER.indexOf(band)>=2)gotR=true;
   let note="";const had=(S.caught[no]&&!S.caught[no].gone)?S.caught[no]:null;
@@ -8466,7 +8466,7 @@ function gcPull(n,free){const cost=free?0:(n===10?1100:120);if(!free&&(S.coins||
  const el0=$("gachaRes");if(el0)el0.innerHTML="";
  try{gcCinematic(out,()=>gcShowGrid(out));}catch(e){try{$("gcOv").classList.add("hidden");}catch(x){}gcShowGrid(out);}
  return out;}
-function renderGacha(){const info=$("gachaInfo");if(!info)return;const pity=S.gcPity||0;info.textContent="뽑은 횟수 "+(S.gcCount||0)+" · 영웅 보장까지 "+Math.max(0,50-pity)+"회";
+function renderGacha(){const info=$("gachaInfo");if(!info)return;const pity=S.gcPity||0;info.textContent="뽑은 횟수 "+(S.gcCount||0)+" · 영웅 보장까지 "+Math.max(0,100-pity)+"회";
  const dayFree=S.gcFreeDay!==todayStr();const b1=$("gc1"),b10=$("gc10");
  b1.textContent=dayFree?"🎁 오늘의 무료 1회":"1회 뽑기 · 120코인";b1.disabled=!dayFree&&(S.coins||0)<120;b1.classList.toggle("primary",!b1.disabled);
  b10.disabled=(S.coins||0)<1100;b10.classList.toggle("primary",!b10.disabled);
