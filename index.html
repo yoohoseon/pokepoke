@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script></head><body><title>외노자가 되기 위한 모험</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="외노자 모험"><meta name="theme-color" content="#1a1d33"><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script></head><body><title>외노자가 되기 위한 모험</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Press+Start+2P&display=swap">
 <style>
 /* Layout: sticky pixel header, one 780px column. RPG dialog boxes with thick flat borders, Game Boy-style map canvas, Pokédex red accent. */
@@ -76,6 +76,8 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 .btn:disabled{opacity:.45;cursor:default}
 .btn.sm{padding:5px 10px;font-size:13px;box-shadow:2px 2px 0 var(--line)}
 .btn.block{width:100%;justify-content:center}
+body[data-fs="2"] :is(#v-dex,#v-train,#v-party,#v-shop,#v-log,#qArea,#dlg){zoom:1.15}
+body[data-fs="3"] :is(#v-dex,#v-train,#v-party,#v-shop,#v-log,#qArea,#dlg){zoom:1.3}
 html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 input,textarea,[contenteditable="true"],#corrText,.selectable{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 button,.btn,.chip,.opt,.glesson,.spk,summary,select,label{touch-action:manipulation}
@@ -538,6 +540,7 @@ details.adv[open] summary::after{content:"▴"}
     </div>
     <div class="small muted">151명을 챌린지 일수 안에 모두 클리어하도록 매일 목표가 자동으로 정해집니다. 출국일까지 모두 돌고 나면 2회차를 시작할 수 있습니다.</div>
     <div class="row"><button class="btn sm" id="bgmBtn">🎵 배경음악 끄기</button></div>
+    <div class="row" id="fsRow"><span class="small muted">글자 크기</span><button class="chip" data-fs="1" aria-pressed="true">보통</button><button class="chip" data-fs="2" aria-pressed="false">크게</button><button class="chip" data-fs="3" aria-pressed="false">더 크게</button></div>
     <div class="row"><button class="btn sm" id="introBtn">인트로 다시 보기</button><button class="btn sm" id="lookBtn">캐릭터 바꾸기</button></div>
     <div class="row"><button class="btn sm" id="resetBtn">진행만 초기화 (도감·레벨·카드 유지)</button><button class="btn sm" id="flagBtn">신고한 문제 복사 (0)</button><button class="btn sm" id="wipeBtn" style="color:var(--bad)">처음부터 다시 하기 (레벨·도감·캐릭터 전부 초기화)</button></div><div class="small muted" id="resetNote"></div>
   </div>
@@ -11138,6 +11141,8 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-gl]");if(b
  document.addEventListener("selectstart",e=>{if(!ok(e.target))e.preventDefault();});
  document.addEventListener("contextmenu",e=>{if(!ok(e.target))e.preventDefault();});
  document.addEventListener("dblclick",e=>{if(!ok(e.target))e.preventDefault();});})();
+/* 글자 크기 설정(기기별 저장) */
+(function(){const apply=f=>{document.body.dataset.fs=f;document.querySelectorAll("#fsRow .chip").forEach(c=>c.setAttribute("aria-pressed",String(c.dataset.fs===f)));};let f="1";try{f=localStorage.getItem("ldq_fs")||"1";}catch(e){}apply(f);document.querySelectorAll("#fsRow .chip").forEach(c=>c.onclick=()=>{apply(c.dataset.fs);try{localStorage.setItem("ldq_fs",c.dataset.fs);}catch(e){}});})();
 /* ---------- boot ---------- */
 function renderAll(){hud();renderCamp();renderEnc();renderMissed();renderPhrase();renderWriteHistory();if(view==="dex")renderDex();if(view==="log")renderLog();}
 const PROF={hair:"#e4e4e4",skin:"#f6cfae",shirt:"#f4f4f4",pants:"#2b3550",glasses:true,tie:"#d62839"};
