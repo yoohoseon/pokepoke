@@ -10861,7 +10861,7 @@ function showMenu(){if(!B||B.phase!=="quiz")return;const b=B;const am=atkMult(b)
 async function nextQ(){if(!B)return;B.n++;showMenu();}
 async function askQuestion(){if(!B)return;if(B.e.boss&&B.e.tier>=1&&B.n%4===3){const iq=pickIQ();if(iq){B.q={type:"ai",iq,prompt:iq.q,ko:iq.ko,hint:iq.tip,sub:B.e.name+"의 면접 질문 · 영어로 직접 써서 답하세요"};say(iq.q,iq.ko);speak(iq.q);renderQ(B.q);return;}}
   if(B.e.boss&&B.e.tier>=1&&B.n%2===1){let bq;for(let g=0;g<12;g++){bq=BOSSQ[rnd(BOSSQ.length)];if(!RECENTB.includes(bq.q))break;}RECENTB.push(bq.q);if(RECENTB.length>14)RECENTB.shift();B.q={type:"mc_en",p:{en:bq.ans,ko:bq.ko},prompt:bq.q,sub:"면접 질문 · 가장 자연스러운 답을 고르세요 · "+bq.ko,opts:shuffle([bq.ans].concat(bq.dis)),ans:bq.ans,speak:false};say(bq.q,bq.ko);speak(bq.q);renderQ(B.q);return;}
-  B.q=B.e.wildQuiz?((B.e.weakMode&&makeWeakQ())||makeWildQ(B.e.tier)):makeQ(B.e.stage.cat,B.e.tier);say(myName(B.my)+"의 공격! 정답을 고르자.","정답을 고르면 "+myName(B.my)+"의 공격이 들어갑니다.");renderQ(B.q);}
+  B.q=B.e.drillType?makeTypeQ(B.e.drillType,B.e.tier):(B.e.wildQuiz?((B.e.weakMode&&makeWeakQ())||makeWildQ(B.e.tier)):makeQ(B.e.stage.cat,B.e.tier));say(myName(B.my)+"의 공격! 정답을 고르자.","정답을 고르면 "+myName(B.my)+"의 공격이 들어갑니다.");renderQ(B.q);}
 function explainQ(q){const p=q.p||{};let t="";if(q.type==="vocab"||q.type==="vocab_rev")t="「"+p.en+"」 = "+p.ko+". 예문: "+(p.ex||"")+" ("+(p.exko||"")+") ";else if(q.type==="reply")t="이 상황에서는 「"+p.en+"」("+p.ko+") 같은 응답이 자연스러워요. ";else if(q.type==="mc_en"||q.type==="order"||q.type==="listen"||q.type==="dict")t="「"+p.en+"」 = "+p.ko+". ";else if(q.type==="mc_ko"){const lc=String(p.en||"").replace(/[^A-Za-z0-9가-힣]+$/,"").slice(-1);t="「"+p.en+"」"+(hasBatchim(lc)?"은":"는")+" '"+p.ko+"'라는 뜻이야. ";}else if(q.type==="blank")t="빈칸에는 '"+q.ans+"'. 전체 문장은 「"+p.en+"」 = "+p.ko+". ";else if(q.type==="ai")t="면접에서는 짧게, 결론부터, 구체적으로! ";if(p.note)t+="포인트: "+p.note+" ";return t;}
 function explainHtml(q,answerText){const p=q.p||{};const en=engOf(q,answerText);const SR=!!(window.SpeechRecognition||window.webkitSpeechRecognition);let head="",sent="",sentKo="",label="";const w=x=>'<b>'+esc(x)+'</b>';
   if(q.type==="vocab"||q.type==="vocab_rev"){head=w(p.en)+' = '+esc(p.ko);sent=p.ex||"";sentKo=p.exko||"";label="예문";}
@@ -11154,6 +11154,11 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-gl]");if(b
  document.addEventListener("dblclick",e=>{if(!ok(e.target))e.preventDefault();});})();
 /* 글자 크기 설정(기기별 저장) */
 (function(){const apply=f=>{document.body.dataset.fs=f;document.querySelectorAll("#fsRow .chip").forEach(c=>c.setAttribute("aria-pressed",String(c.dataset.fs===f)));};let f="1";try{f=localStorage.getItem("ldq_fs")||"1";}catch(e){}apply(f);document.querySelectorAll("#fsRow .chip").forEach(c=>c.onclick=()=>{apply(c.dataset.fs);try{localStorage.setItem("ldq_fs",c.dataset.fs);}catch(e){}});})();
+/* 약한 유형 연습: 같은 유형 문제만 나오는 전투 */
+function makeTypeQ(type,tier){const cats=Object.keys(CATS).filter(c=>c!=="mine");if(type==="ai"){const iq=pickIQ();if(iq)return{type:"ai",iq,prompt:iq.q,ko:iq.ko,hint:iq.tip,sub:"면접 질문 · 영어로 직접 써서 답하세요"};}
+ let q=null;for(let g=0;g<80;g++){q=(type==="vocab"||type==="vocab_rev")?makeWildQ(Math.max(1,tier||1)):makeQ(cats[rnd(cats.length)],(type==="dict"||type==="order")?3:1+rnd(3));if(q&&q.type===type)return q;}return q;}
+function startTypeDrill(type){if(B||MODE!=="map"){return;}if(!S.partner){toast("파트너 포켓몬이 없습니다");return;}show("adv");const st=STAGES[objIdx()];const idx0=ENC.findIndex(x=>x.stage===st);const pick=ENC[Math.max(0,Math.min(ENC.length-1,idx0+rnd(st.n)))];const e=Object.assign({},pick,{wildQuiz:true,drillType:type,boss:false,i:-1,name:"연습 몬스터",title:"유형 연습",line:"",stage:st});toast("🎯 "+(TYLAB[type]||type)+" 연습을 시작해요");startBattle(e,false);}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-drill]");if(b)startTypeDrill(b.dataset.drill);});
 /* 오늘의 학습 요약 */
 const TYLAB={mc_en:"뜻 → 영어 고르기",mc_ko:"듣고 뜻 고르기",listen:"듣고 영어 고르기",blank:"빈칸 채우기",order:"단어 배열",dict:"받아쓰기",reply:"대화 응답",vocab:"단어 뜻",vocab_rev:"영단어 고르기",ai:"면접 질문"};
 function renderToday(){const el=$("todayBox");if(!el)return;const d=S.days[todayStr()]||{};const q=d.q||0,ok=d.ok||0;const pct=q?Math.round(ok/q*100):0;
@@ -11162,7 +11167,7 @@ function renderToday(){const el=$("todayBox");if(!el)return;const d=S.days[today
  const mx=Math.max(5,...days.map(x=>x.q));
  el.innerHTML='<div class="row between"><h3 style="margin:0;font-size:16px">📅 오늘의 학습</h3><span class="pill soft">연속 '+streak()+'일</span></div>'
   +'<div class="row" style="gap:10px;flex-wrap:wrap"><div class="tdc"><b>'+q+'</b><small>푼 문제</small></div><div class="tdc"><b>'+(q?pct+"%":"-")+'</b><small>정답률</small></div><div class="tdc"><b>'+(d.lesson||0)+'</b><small>문법 레슨</small></div><div class="tdc"><b>'+((d.talk||0)+(d.write||0))+'</b><small>회화·교정</small></div></div>'
-  +(weak?'<div class="small">오늘 가장 많이 틀린 유형: <b>'+esc(TYLAB[weak.k]||weak.k)+'</b> ('+weak.n+'문제 중 '+weak.x+'개). 훈련 탭에서 같은 유형을 더 풀어 보세요.</div>':(q?'<div class="small muted">오늘은 특별히 약한 유형이 없어요. 잘하고 있어요!</div>':'<div class="small muted">오늘 푼 문제가 아직 없어요. 전투 한 번이면 시작이에요.</div>'))
+  +(weak?'<div class="small">오늘 가장 많이 틀린 유형: <b>'+esc(TYLAB[weak.k]||weak.k)+'</b> ('+weak.n+'문제 중 '+weak.x+'개). </div><div class="row"><button class="btn sm primary" data-drill="'+weak.k+'">🎯 이 유형 연습하기</button></div>':(q?'<div class="small muted">오늘은 특별히 약한 유형이 없어요. 잘하고 있어요!</div>':'<div class="small muted">오늘 푼 문제가 아직 없어요. 전투 한 번이면 시작이에요.</div>'))
   +'<div class="tdbars">'+days.map(x=>'<div class="tdb"><i style="height:'+Math.round(x.q/mx*56)+'px"'+(x.today?' class="on"':'')+'></i><span>'+x.q+'</span><small>'+x.w+'</small></div>').join("")+'</div><div class="small muted">최근 7일 푼 문제 수</div>';}
 /* ---------- boot ---------- */
 function renderAll(){hud();renderCamp();renderEnc();renderMissed();renderPhrase();renderWriteHistory();if(view==="dex")renderDex();if(view==="log")renderLog();}
