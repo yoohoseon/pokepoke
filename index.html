@@ -10889,7 +10889,7 @@ function resolve(ok,answerText){if(!B)return;const b=B;const now=performance.now
 function yellOk(){const c=B&&B.combo>=3;return (c?["야르르르이히~!!! 연속 정답이구먼! 영어 실력이 쑥쑥 크네!","얼씨구!!! 콤보가 이어지는구먼! 이 기세로 가세!"]:["좋았어!!! 정답이야, 신바람 나는구먼!","오오~ 정답일세! 영어 실력이 쑥쑥 크는구먼!","야르르르이히~! 정답! 이 표현은 이제 자네 것일세!","바로 그거야! 정답이구먼! 계속 가 보세!"])[rnd(c?2:4)];}
 function win(){if(!B)return;sfx.faint();const e=B.e;B.phase="win";B.hp=0;B.anim.foeFaint=performance.now();setTimeout(()=>{if(B)sfx.win();},800);$("qArea").innerHTML="";$("qInfo").textContent="";say(NAMES[B.no-1]+"은(는) 쓰러졌다! "+(e.wildQuiz?"":e.name+"을(를) 이겼다!"),"");$("qInfo").innerHTML="";const xp=(e.boss?120:25)+e.tier*10;S.xp+=xp;S.wins++;day().win=(day().win||0)+1;S.balls+=1;if(e.wildQuiz){const dd=day();dd.wild=(dd.wild||0)+1;}const coinGain=(e.wildQuiz?8:e.boss?50:12)+e.tier*3;addCoins(coinGain);B.coinGain=coinGain;if(!e.wildQuiz){S.cleared[e.i]=true;S.pos=clearedCount();}awardXp((e.wildQuiz?18:e.boss?100:30)+e.tier*8);save();renderCamp();hud();
   setTimeout(()=>{if(!B)return;if(e.wildQuiz)say("야생의 "+NAMES[B.no-1]+"이(가) 지쳐서 쓰러졌다!","+"+xp+" XP · 몬스터볼 +1 · 코인 +"+B.coinGain);else say(e.name+': "'+(e.boss?"You got me. Here's your offer... just kidding, catch that first.":"Okay, okay. You win this one.")+'"',"+"+xp+" XP · 몬스터볼 +1 · 코인 +"+B.coinGain);setTimeout(()=>{if(!B)return;if(e.wildQuiz){B.foeGone=false;delete B.anim.foeFaint;startCapture();}else trainerWinEnd();},1400);},1200);}
-function trainerWinEnd(){if(!B)return;const no=B.no;if(!S.caught[no]&&!(S.missed||[]).includes(no)){S.missed=S.missed||[];S.missed.push(no);}save();try{renderMissed();}catch(e){}say("트레이너의 포켓몬은 잡을 수 없어요!",NAMES[no-1]+"은(는) 야생에서 만나면 잡을 수 있어요. 모험 화면의 '야생에서 만날 수 있어요'에서 도전해 보세요.");setTimeout(()=>{if(B)finishBattle();},1800);}
+function trainerWinEnd(){if(!B)return;const no=B.no;if(!S.caught[no]&&!(S.missed||[]).includes(no)){S.missed=S.missed||[];S.missed.push(no);}save();try{renderMissed();}catch(e){}setTimeout(()=>{if(B)finishBattle();},700);}
 let lastLost=false;
 function lose(){if(!B)return;B.phase="lose";B.me=0;B.anim.myFaint=performance.now();sfx.faint();S.losses++;save();say(myName(B.my)+"은(는) 쓰러졌다!","");$("qInfo").innerHTML="";$("qArea").innerHTML="";sfx.no();setTimeout(()=>{if(!B)return;say("눈앞이 캄캄해졌다…","");BLACK={t0:performance.now(),done:false,cb:()=>{lastLost=true;endBattle();placePlayer(true);scrollToMap();try{if(!bgmMuted()){const h=new Audio(PR+"bgm/heal.mp3");h.volume=0.5;h.play().catch(()=>{});}}catch(e){}}};},900);}
 $("fleeBtn").onclick=()=>{if(!B||B.wild||B.phase==="lose")return;const e=B.e;ignoreNpc=room().npcs.find(n=>n.e===e)||null;ignoreSteps=3;endBattle();};
@@ -11224,6 +11224,20 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
  const stageInfo=()=>{let n=0,last="";try{for(let si=0;si<STAGES.length;si++){if(bossCleared(si)){n=si+1;last=STAGES[si].name;}else break;}}catch(e){}return{n,last};};
  const score=s=>{try{return Object.keys(s.cleared||{}).length*1000+(s.wins||0)+Object.keys(s.caught||{}).length*10;}catch(e){return 0;}};
  async function sessionFor(id){try{const r=await sb.auth.getSession();const u=r&&r.data&&r.data.session&&r.data.session.user;return(u&&u.email===MAIL(id))?u:null;}catch(e){return null;}}
+ /* 로그인 로딩 화면: 저장본을 게임 시작 전에 받아 와서 깜빡임 없이 저장된 위치에서 시작 */
+ const st=document.createElement("style");st.textContent='#ldqLoad{position:fixed;inset:0;z-index:99999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:linear-gradient(#1a1d33,#2a2f55);color:#fff;font-family:inherit}#ldqLoad canvas{width:min(92vw,360px);height:auto;image-rendering:pixelated}#ldqLoad .lt{font-size:15px;font-weight:700;letter-spacing:.02em}#ldqLoad .ls{font-size:12px;opacity:.7}';document.head.appendChild(st);
+ let loadRaf=0;
+ function loadAnim(cv){const x=cv.getContext("2d");cv.dataset.on="1";const t0=performance.now();const loop=t=>{if(cv.dataset.on!=="1")return;const e=t-t0;x.clearRect(0,0,320,150);x.fillStyle="#3a3f6b";x.fillRect(0,118,320,4);
+   const px=((e/9)%420)-50,by=118+Math.abs(Math.sin(e/110))*-14;
+   for(let k=1;k<=4;k++){x.fillStyle="rgba(255,255,255,"+(0.35-k*0.07)+")";x.beginPath();x.arc(px-34-k*16,116-k*3,6-k,0,6.3);x.fill();}
+   let ok=false;try{ok=drawMon(x,25,px,by,{t:e,anim:true,fit:96});}catch(err){}
+   if(!ok){try{drawIcon(x,25,px,by,2,false);}catch(err){}}
+   loadRaf=requestAnimationFrame(loop);};loadRaf=requestAnimationFrame(loop);}
+ function loadOv(on,sub){let o=document.getElementById("ldqLoad");if(on){if(!o){o=document.createElement("div");o.id="ldqLoad";o.innerHTML='<canvas width="320" height="150"></canvas><div class="lt">모험을 불러오는 중<span class="dots"></span></div><div class="ls">야르르르이히~ 곧 도착한다네!</div>';document.body.appendChild(o);}o.style.display="flex";if(sub)o.querySelector(".ls").textContent=sub;loadAnim(o.querySelector("canvas"));}else if(o){o.style.display="none";o.querySelector("canvas").dataset.on="0";cancelAnimationFrame(loadRaf);}}
+ async function preseed(id){try{const r=await sb.auth.getSession();const uid=r&&r.data&&r.data.session&&r.data.session.user&&r.data.session.user.id;if(!uid)return;
+   const q=await sb.from("progress").select("data").eq("user_id",uid).maybeSingle();const remote=q&&q.data&&q.data.data;if(!remote)return;
+   let local=null;try{local=JSON.parse(localStorage.getItem("ldq_state_"+id)||"null");}catch(e){}
+   if(!local||score(remote)>score(local)||(score(remote)===score(local)&&(remote.savedAt||0)>=(local.savedAt||0)))localStorage.setItem("ldq_state_"+id,JSON.stringify(remote));}catch(e){}}
  window.tryLogin=tryLogin=async function(){
   const id=$("uid").value.trim().toLowerCase();const pw=$("pw").value;
   if(!ACCOUNTS.includes(id)){$("loginMsg").textContent="그런 트레이너는 없는데? 아이디를 다시 보게.";return;}
@@ -11233,8 +11247,13 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
    if(!pw){ok=!!(await sessionFor(id));if(!ok){$("loginMsg").textContent="암호를 넣어 주게.";return;}}
    else{const r=await sb.auth.signInWithPassword({email:MAIL(id),password:pw});if(r.error){$("loginMsg").textContent="암호가 틀렸네! 다시 넣어 보게.";$("pw").value="";return;}ok=true;}
    try{localStorage.setItem("ldq_acct",id);if($("rememberMe").checked)localStorage.setItem("ldq_remember",JSON.stringify({id}));else localStorage.removeItem("ldq_remember");}catch(e){}
+   loadOv(true);const t0=performance.now();
+   await preseed(id);
    boot(id);
-  }catch(e){$("loginMsg").textContent="서버에 연결하지 못했어요. 인터넷을 확인해 주세요.";}
+   try{await Promise.race([window.__ldqDbP||Promise.resolve(),new Promise(r=>setTimeout(r,8000))]);}catch(e){}
+   const rest=Math.max(0,900-(performance.now()-t0));await new Promise(r=>setTimeout(r,rest));
+   loadOv(false);
+  }catch(e){loadOv(false);$("loginMsg").textContent="서버에 연결하지 못했어요. 인터넷을 확인해 주세요.";}
   finally{$("loginBtn").disabled=false;}
  };
  $("loginBtn").onclick=tryLogin;
@@ -11254,7 +11273,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
   if(remoteWins){for(const k of ["coins","balls","superBalls","repelSteps","lureSteps","lastLogin","loginStreak","party","partner","evoItems","custom","days","weak","seenQ","flags","stats","writes","talkSeen","cards","look"])if(R[k]!==undefined)L[k]=clone(R[k]);}
   if(!Array.isArray(L.party)||!L.party.length)L.party=clone(R.party||[]);
  }
- window.initDb=initDb=async function(){
+ async function initDbInner(){
   const acct=ACCT;let uid=null;
   try{const r=await sb.auth.getSession();uid=r&&r.data&&r.data.session&&r.data.session.user&&r.data.session.user.id;}catch(e){}
   if(!uid)return;
@@ -11286,7 +11305,8 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
    else{dbDoc=doc;await doc.set(S);}
    $("sync").textContent="동기화됨";
   }catch(e){dbDoc=null;$("sync").textContent="기기 저장";}
- };
+ }
+ window.initDb=initDb=function(){window.__ldqDbP=initDbInner();return window.__ldqDbP;};
  const lo=$("logoutBtn").onclick;
  $("logoutBtn").onclick=async function(){try{await sb.auth.signOut();}catch(e){}if(lo)lo.apply(this,arguments);};
 })();
