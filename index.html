@@ -533,8 +533,8 @@ details.adv[open] summary::after{content:"▴"}
   <div class="small muted">전투에서 이기면 코인이 쌓입니다. 야생 포켓몬과 보스를 이길수록 더 많이 받아요.</div>
   <div class="box stack" id="gachaBox" style="gap:8px;border-color:var(--accent)">
     <div class="row between"><b>🎰 포켓몬 가챠</b><span class="small muted" id="gachaInfo"></span></div>
-    <div class="small muted">코인으로 포켓몬을 뽑아요. 이로치(✨)가 나올 수도 있어요! 이미 가진 포켓몬이 나오면 경험치와 코인으로 돌려받아요.</div>
-    <div class="row"><button class="btn primary" id="gc1">1회 뽑기 · 120코인</button><button class="btn" id="gc10">10회 뽑기 · 1,100코인</button><button class="btn primary" id="gcFree" hidden>🎁 무료 10회 뽑기</button></div>
+    <div class="small" id="gachaDesc" style="line-height:1.5"></div>
+    <div class="row"><button class="btn primary" id="gc1">1회 뽑기 · 120코인</button><button class="btn" id="gc10">10회 뽑기 · 1,100코인</button><button class="btn primary" id="gcFree" style="display:none">🎁 무료 10회 뽑기</button></div>
     <div class="small muted" id="gachaRates"></div>
     <div class="gcres" id="gachaRes"></div>
   </div>
@@ -8449,9 +8449,14 @@ function gcPull(n,free){const cost=free?0:(n===10?1100:120);if(!free&&(S.coins||
  const el0=$("gachaRes");if(el0)el0.innerHTML="";
  try{gcCinematic(out,()=>gcShowGrid(out));}catch(e){try{$("gcOv").classList.add("hidden");}catch(x){}gcShowGrid(out);}
  return out;}
-function renderGacha(){const info=$("gachaInfo");if(!info)return;const pity=S.gcPity||0;info.textContent="뽑은 횟수 "+(S.gcCount||0)+" · 영웅 보장까지 "+Math.max(0,50-pity)+"회";$("gc1").disabled=(S.coins||0)<120;$("gc10").disabled=(S.coins||0)<1100;{const f=$("gcFree");if(f){f.hidden=!(S.freeTen>0);f.textContent="🎁 무료 10회 뽑기 ("+(S.freeTen||0)+")";}}
- $("gachaRates").textContent="일반 62% · 고급 25% · 희귀 10% · 영웅 2.9% · 전설 0.1% · 이로치 5% · 10회 뽑기는 희귀 이상 1마리 보장 · 50회마다 영웅 보장 · 전설은 진짜 전설 포켓몬만(보장 없음)";}
-document.addEventListener("click",e=>{if(e.target.closest("#gc1"))gcPull(1);else if(e.target.closest("#gc10"))gcPull(10);else if(e.target.closest("#gcFree")){if(S.freeTen>0){S.freeTen--;gcPull(10,true);}}});
+function renderGacha(){const info=$("gachaInfo");if(!info)return;const pity=S.gcPity||0;info.textContent="뽑은 횟수 "+(S.gcCount||0)+" · 영웅 보장까지 "+Math.max(0,50-pity)+"회";
+ const dayFree=S.gcFreeDay!==todayStr();const b1=$("gc1"),b10=$("gc10");
+ b1.textContent=dayFree?"🎁 오늘의 무료 1회":"1회 뽑기 · 120코인";b1.disabled=!dayFree&&(S.coins||0)<120;b1.classList.toggle("primary",!b1.disabled);
+ b10.disabled=(S.coins||0)<1100;b10.classList.toggle("primary",!b10.disabled);
+ const f=$("gcFree");if(f){const has=(S.freeTen||0)>0;f.style.display=has?"":"none";f.textContent="🎁 무료 10회 뽑기 ("+(S.freeTen||0)+")";}
+ const r=$("gachaRates");if(r){r.textContent="";r.style.display="none";}
+ const d=$("gachaDesc");if(d){const L=["도박은 나쁜 거예요! …근데 이로치(✨)가 갖고 싶다면? 뭐, 한번 뽑아 보시든가요 😏","도박 금지! 라고 말하고 싶지만 반짝이는 건 못 참죠 ✨ 일단 한 번만… 아니 한 번 더…","이건 도박이 아니라 '도감 채우기'예요. …라고 믿고 싶은 당신, 환영해요 😈","오늘의 무료 1회는 내일이 되면 사라져요. 모아 둘 순 없으니 부지런히 뽑아요 🎁"];d.textContent=L[new Date().getDate()%L.length];}}
+document.addEventListener("click",e=>{if(e.target.closest("#gc1")){if(S.gcFreeDay!==todayStr()){S.gcFreeDay=todayStr();gcPull(1,true);}else gcPull(1);}else if(e.target.closest("#gc10"))gcPull(10);else if(e.target.closest("#gcFree")){if(S.freeTen>0){S.freeTen--;gcPull(10,true);}}});
 function renderShop(){renderGacha();renderMissions();const el=$("shopList");if(!el)return;$("shopCoins").textContent=S.coins||0;el.innerHTML=SHOP.map((it,i)=>'<div class="shopitem"><span class="ic">'+it.ic+'</span><span class="tx"><b>'+it.n+'</b><small>'+it.d+(it.own()?' · '+it.own():'')+'</small></span><button class="btn sm primary" data-buy="'+i+'" '+((S.coins||0)<it.c?'disabled':'')+'>'+it.c+' 코인</button></div>').join("");}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-buy]");if(!b)return;const it=SHOP[+b.dataset.buy];if(!it||(S.coins||0)<it.c){toast("코인이 부족합니다");return;}S.coins-=it.c;it.f();sfx.get();save();hud();renderShop();toast(it.ic+" "+it.n+" 구매!");});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-evoitem]");if(!b||b.disabled||B)return;const parts=b.dataset.evoitem.split("|");const to=+parts[0],it=parts[1];const n=dexSel;if(!n||!S.caught[n]||((S.evoItems&&S.evoItems[it])||0)<1)return;S.evoItems[it]--;const m=mon(n);m.stop=false;save();hud();startEvo(n,to);});
