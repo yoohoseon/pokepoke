@@ -443,6 +443,7 @@ details.adv[open] summary::after{content:"▴"}
   <div class="box stack">
     <div class="row between"><h2 style="font-size:16px">포켓몬 도감</h2><span class="px" id="dexCount">0 / 251</span></div>
     <div class="bar"><i id="dexBar" style="width:0%"></i></div>
+    <div class="small muted" id="dexRewInfo"></div>
     <div class="row" id="dexGenTabs" style="gap:6px;flex-wrap:wrap"></div>
     <div class="row"><button class="chip" data-f="all" aria-pressed="true">전체</button><button class="chip" data-f="caught" aria-pressed="false">잡은 포켓몬</button><span class="small muted">잡은 포켓몬을 누르면 파트너로 데리고 다닐 수 있습니다.</span></div>
   </div>
@@ -9318,7 +9319,15 @@ function allPhrases(){return P.concat(S.custom);}
 function streak(){let n=0,d=todayStr();const has=k=>{const x=S.days[k];return x&&(x.review+x.talk+x.write+(x.win||0)+(x.login||0))>0;};if(!has(d))d=addDays(d,-1);while(has(d)){n++;d=addDays(d,-1);}return n;}
 function level(){return Math.floor(Math.sqrt(S.xp/25))+1;}
 function caughtCount(){return Object.keys(S.caught).length;}
-function hud(){try{renderFlagBtn();}catch(e){}try{renderMissionBtn();}catch(e){}const dd=daysBetween(todayStr(),S.target);$("hdrDday").textContent=dd>0?"D-"+dd:dd===0?"D-DAY":"D+"+(-dd);$("hdrLv").textContent=level();$("hdrBalls").textContent=S.balls+(S.superBalls?"+"+S.superBalls:"");{const c=$("hdrCoins");if(c)c.textContent=S.coins||0;}$("hdrDex").textContent=caughtCount()+"/"+dexMax();const pc=S.partner&&mon(S.partner);$("hdrPartner").innerHTML=pc?"선두 <b>"+esc(myName(S.partner))+" Lv "+pc.lv+"</b>":"";renderParty();}
+
+/* ---------- 도감 달성 보상 ---------- */
+function checkDexRewards(){try{if(!S||!S.intro||!S.caught)return;S.dexRew=S.dexRew||{};const GE=GEN_END;const msgs=[];
+ for(let g=1;g<=9;g++){const lo=GE[g-1]+1,hi=GE[g],tot=hi-lo+1;let c=0;for(let k=lo;k<=hi;k++)if(S.caught[k])c++;
+  if(c>=Math.ceil(tot/2)&&!S.dexRew["h"+g]){S.dexRew["h"+g]=1;addCoins(100);msgs.push(g+"세대 도감 50% 달성! 코인 +100");}
+  if(c>=tot&&!S.dexRew["f"+g]){S.dexRew["f"+g]=1;addCoins(300);S.freeTen=(S.freeTen||0)+1;msgs.push("🎉 "+g+"세대 도감 완성! 코인 +300 · 무료 10회 뽑기권 +1");}}
+ const all=Object.keys(S.caught).length;[[100,300,0],[300,500,0],[600,800,1],[1000,2000,1]].forEach(([need,coin,tk])=>{const key="t"+need;if(all>=need&&!S.dexRew[key]){S.dexRew[key]=1;addCoins(coin);if(tk)S.freeTen=(S.freeTen||0)+1;msgs.push("📖 도감 "+need+"종 달성! 코인 +"+coin+(tk?" · 무료 10회 뽑기권 +1":""));}});
+ if(msgs.length){save();msgs.forEach((m,i)=>setTimeout(()=>toast(m),1200+i*2600));}}catch(e){}}
+function hud(){try{checkDexRewards();}catch(e){}try{renderFlagBtn();}catch(e){}try{renderMissionBtn();}catch(e){}const dd=daysBetween(todayStr(),S.target);$("hdrDday").textContent=dd>0?"D-"+dd:dd===0?"D-DAY":"D+"+(-dd);$("hdrLv").textContent=level();$("hdrBalls").textContent=S.balls+(S.superBalls?"+"+S.superBalls:"");{const c=$("hdrCoins");if(c)c.textContent=S.coins||0;}$("hdrDex").textContent=caughtCount()+"/"+dexMax();const pc=S.partner&&mon(S.partner);$("hdrPartner").innerHTML=pc?"선두 <b>"+esc(myName(S.partner))+" Lv "+pc.lv+"</b>":"";renderParty();}
 
 const SHOP=[
  {k:"ball",ic:"🔴",n:"몬스터볼 ×5",d:"포획 기회가 늘어납니다",c:25,own:()=>"보유 "+S.balls+"개",f:()=>{S.balls+=5;}},
@@ -14746,7 +14755,7 @@ function meetWild(no){if(B||MODE!=="map")return;if(!S.partner){toast("파트너 
 let dexF="all",dexSel=null,dexAnim=null;
 document.querySelectorAll("#v-dex .chip").forEach(c=>c.onclick=()=>{dexF=c.dataset.f;document.querySelectorAll("#v-dex .chip").forEach(x=>x.setAttribute("aria-pressed",x.dataset.f===dexF));renderDex();});
 let dexGen=1;
-function renderDex(){const cap=genCap();const n=caughtCount();$("dexCount").textContent=n+" / "+GEN_END[cap];$("dexBar").style.width=Math.round(n/GEN_END[cap]*100)+"%";
+function renderDex(){const cap=genCap();try{const dr=S.dexRew||{};const el=$("dexRewInfo");if(el)el.textContent="도감 보상: 세대별 50% 코인 +100, 100% 완성 시 코인 +300과 무료 10회 뽑기권 · 전체 100종/300종/600종/1000종 달성 보상";}catch(e){}const n=caughtCount();$("dexCount").textContent=n+" / "+GEN_END[cap];$("dexBar").style.width=Math.round(n/GEN_END[cap]*100)+"%";
  {const tb=$("dexGenTabs");if(tb){tb.innerHTML='<span class="small muted">바로가기</span>'+[1,2,3,4,5,6,7,8,9].map(gg=>'<button class="chip" data-g="'+gg+'">'+(gg>cap?'🔒':'')+gg+'세대</button>').join("");}}
  const g=$("dexGrid");g.style.setProperty("--ico","url("+PR+"icons.png)");const frag=document.createDocumentFragment();
  for(let gg=1;gg<=9;gg++){const lo=GEN_END[gg-1]+1,hi=GEN_END[gg];let cnt=0;for(let k=lo;k<=hi;k++)if(S.caught[k])cnt++;if(dexF==="caught"&&!cnt)continue;
