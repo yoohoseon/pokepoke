@@ -911,7 +911,7 @@ const rnd=n=>Math.floor(Math.random()*n);
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
 const EPOCH=2;
 const def=()=>({lastLogin:"",loginStreak:0,inCity:true,evoItems:{},coins:0,superBalls:0,repelSteps:0,lureSteps:0,party:[],epoch:EPOCH,starter:null,intro:false,look:null,cleared:{},room:0,cleared:{},room:0,target:"2027-12-01",camp:{start:todayStr(),days:100},pos:0,caught:{},missed:[],balls:5,partner:null,xp:0,wins:0,losses:0,cards:{},custom:[],days:{},writes:[],lap:1});
-const ACCOUNTS=["kjs","yhs","ktm"],WHO={kjs:"김준석",yhs:"유호선",ktm:"김태민"},PASS="__supabase_login_only__";let ACCT=null;const NICK={};function WN(a){return (a===ACCT&&S.tname)||NICK[a]||WHO[a]||a||"트레이너";}window.__nick=NICK;function applyName(){try{$("hdrWho").textContent=WN(ACCT)+" 트레이너";}catch(e){}}
+const ACCOUNTS=["kjs","yhs","ktm","test01"],WHO={kjs:"김준석",yhs:"유호선",ktm:"김태민",test01:"테스터"},PASS="__supabase_login_only__";let ACCT=null;const NICK={};function WN(a){return (a===ACCT&&S.tname)||NICK[a]||WHO[a]||a||"트레이너";}window.__nick=NICK;function applyName(){try{$("hdrWho").textContent=WN(ACCT)+" 트레이너";}catch(e){}}
 let S=def();
 const useCap=n=>(window.claude&&typeof window.claude.use==="function")?window.claude.use(n):Promise.resolve(null);
 let dbDoc=null,saveT=null;
