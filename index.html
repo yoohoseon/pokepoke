@@ -543,7 +543,7 @@ details.adv[open] summary::after{content:"▴"}
   </div>
   <div class="box stack hidden" id="statBox"></div>
   <div class="box stack hidden" id="nickBox"><b id="nickTitle">이름 바꾸기</b><div class="small muted">내가 잡은 포켓몬에게 별명을 붙여 보세요. 최대 10글자예요.</div><div class="row"><input type="text" id="nickIn" maxlength="10" placeholder="별명" style="flex:1 1 160px"><button class="btn primary" id="nickSave">저장</button><button class="btn" id="nickReset">기본 이름</button><button class="btn ghost" id="nickCancel">취소</button></div></div>
-  <details class="box stack" id="boxDet"><summary id="boxSum" style="font-weight:800;font-size:15px;cursor:pointer">📦 보유 포켓몬 보기</summary><div class="small muted" style="margin-top:6px">카드를 누르면 상세에서 파티 편성·이름 바꾸기·박사에게 보내기를 할 수 있어요.</div><div class="boxgrid" id="boxGrid" style="margin-top:8px"></div></details>
+  <details class="box stack" id="boxDet"><summary id="boxSum" style="font-weight:800;font-size:15px;cursor:pointer">📦 보유 포켓몬 보기</summary><div class="small muted" style="margin-top:6px">카드를 누르면 상세에서 파티 편성·이름 바꾸기·박사에게 보내기를 할 수 있어요.</div><div class="row" id="boxFilter" style="gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center"><select id="boxType" aria-label="타입 필터" style="padding:5px 6px"><option value="">타입 전체</option></select><select id="boxSort" aria-label="정렬" style="padding:5px 6px"><option value="no">번호순</option><option value="name">이름순</option><option value="lvd">레벨 높은순</option><option value="lva">레벨 낮은순</option></select><button class="btn sm" id="boxShiny" aria-pressed="false">✨ 이로치만</button><span class="small muted" id="boxFcount"></span></div><div class="boxgrid" id="boxGrid" style="margin-top:8px"></div></details>
   <div class="box stack hidden" id="labBox"><div class="row between"><h3 style="margin:0;font-size:16px">🔬 포켓몬 박사 연구소</h3><span class="small muted" id="labCount"></span></div><div class="small muted">파티에 안 쓰는 포켓몬을 박사에게 맡기면 코인을 받아요. 도감에는 그대로 남고, 언제든 데려올 수 있어요.</div><div class="boxgrid" id="labGrid"></div></div>
 </section>
 <section class="view hidden" id="v-shop">
@@ -9571,13 +9571,14 @@ function statEvoRow(n,c){const ev=EVO[n],its=EVO_ITEM[n]||[];if(!ev&&!its.length
  if(ev){const can=c.lv>=ev[1]&&evoOk(ev[0]);h+='<button class="btn sm primary" data-evonow="'+n+'" '+(can?'':'disabled')+'>✨ 진화 → '+esc(nm(ev[0]))+(can?'':' (Lv'+ev[1]+' 필요)')+'</button>';}
  its.forEach(o=>{const have=(S.evoItems&&S.evoItems[o.item])||0;const lvOk=!o.d||c.lv>=o.d;h+='<button class="btn sm primary" data-evoitem="'+o.to+'|'+o.item+'" data-evomon="'+n+'" '+((have>0&&evoOk(o.to))?'':'disabled')+'>'+ITEM_ICON[o.item]+' '+ITEM_NAME[o.item]+' → '+NAMES[o.to-1]+' (보유 '+have+')</button>';});
  return '<div class="useb">'+h+'</div>';}
+function pokeCry(n){const nm=String(NAMES[n-1]||"").replace(/[^가-힣A-Za-z0-9]/g,"");const c=nm.length>3?nm.slice(0,2):nm;const hp=(typeof curHp==="function")?curHp(n):1;if(hp<=0)return c+"...";const low=hp/Math.max(1,maxHp(n))<0.35;return low?c+".. "+c+"..":c+"! "+c+"!";}
 function renderStat(){const box=$("statBox");if(!box)return;const n=statNo;if(!n||!S.caught[n]){box.classList.add("hidden");return;}const c=mon(n);const h=curHp(n),mx=maxHp(n);const nx=need(c.lv);const wk=weakOf(n);const en={bst:BST[n-1]};const ev=EVO[n];
  const useBtns=Object.keys(HEALS).map(k=>'<button class="btn sm" data-use="'+k+':'+n+'" '+(itemCount(k)?'':'disabled')+'>'+HEALS[k].ic+' '+HEALS[k].n+' ('+itemCount(k)+')</button>').join("");
  box.innerHTML='<div class="row between"><b style="font-size:16px">'+esc(myName(n))+' <small>Lv'+c.lv+'</small></b><button class="btn sm ghost" id="statClose">닫기</button></div>'
  +'<div class="row" style="gap:12px;align-items:center"><canvas width="120" height="104" data-n="'+n+'" data-big="1"></canvas><div class="stack" style="gap:4px;flex:1;min-width:0"><div>'+tpills(TYPES[n-1])+'</div><div class="statrow"><span>체력</span><b>'+(h<=0?'기절':h+' / '+mx)+'</b></div>'+hpBar(n)+'<div class="statrow"><span>경험치</span><b>'+c.xp+' / '+nx+'</b></div><div class="xpbar"><i style="width:'+Math.min(100,Math.round(c.xp/nx*100))+'%"></i></div></div></div>'
  +'<div class="small">약점: '+(wk.w.length?wk.w.map(t=>TKO[t]).join(" · "):"없음")+'<br>잘 버티는 타입: '+(wk.r.length?wk.r.map(t=>TKO[t]).join(" · "):"없음")+'</div>'
  +'<div class="small muted">'+(c.at?'만난 날 '+esc(c.at):'')+(c.where?' · '+esc(c.where):'')+(en&&en.bst?' · 종족값 합계 '+en.bst:'')+(ev?' · '+ev[1]+'레벨에 진화':'')+'</div>'
- +'<div class="small muted">체력은 틀린 답을 낼 때 줄어들고, 전투가 끝나도 그대로예요. 아래 아이템을 쓰거나 전원 기절 후 포켓몬센터에서 회복해요.</div><div class="useb">'+useBtns+'</div>'
+ +'<div class="small" style="font-style:italic;color:var(--muted)">“'+esc(pokeCry(n))+'”</div>'+(h<=0?'<div class="small muted">기절했어요. 아래 아이템을 쓰거나 포켓몬센터에서 회복해요.</div>':'')+'<div class="useb">'+useBtns+'</div>'
  +statEvoRow(n,c)
  +'<div class="useb act">'+(S.party.includes(n)?'<button class="btn sm" data-pm-rm="'+n+'" '+(S.party.length<=1?'disabled':'')+'>파티에서 빼기</button>':'<button class="btn sm" data-pm-add="'+n+'" '+(S.party.length>=PARTY_MAX?'disabled':'')+'>'+(S.party.length>=PARTY_MAX?'파티 가득 참':'파티에 넣기')+'</button>')+'<button class="btn sm" data-trainpick="'+n+'">🏋 트레이닝</button><button class="btn sm" data-nick="'+n+'">✏️ 이름 바꾸기</button><button class="btn sm danger" data-lab-send="'+n+'" '+((S.party.includes(n)||n===S.partner)?'disabled':'')+'>'+(labArm===n?'정말 보낼까요? (+'+labReward(n)+'코인 · 되돌릴 수 없어요)':'박사에게 보내기 (+'+labReward(n)+'코인)')+'</button></div>';
  box.classList.remove("hidden");box.querySelectorAll("canvas[data-n]").forEach(cv=>{const x=cv.getContext("2d");let t0=performance.now();const lp=t=>{if(!document.body.contains(cv)||!statNo||$("statBox").classList.contains("hidden"))return;x.clearRect(0,0,cv.width,cv.height);if(!drawMon(x,+cv.dataset.n,cv.width/2,cv.height-6,{t,anim:true,fit:cv.height-14}))drawIcon(x,+cv.dataset.n,cv.width/2,cv.height-8,3,false);requestAnimationFrame(lp);};requestAnimationFrame(lp);});
@@ -9587,10 +9588,15 @@ document.addEventListener("click",e=>{const gb=e.target.closest("#dexGenTabs [da
  const u=e.target.closest("[data-use]");if(u){const [k,n]=u.dataset.use.split(":");if(useItem(k,+n)){toast(HEALS[k].ic+" "+HEALS[k].n+" 사용! "+myName(+n)+" 체력 "+curHp(+n)+"/"+maxHp(+n));hud();try{renderStrip();}catch(er){}renderStat();if(view==="party")renderPartyView();}}});
 const PARTY_MAX=5;
 function renderParty(){ensureParty();const tp=$("toParty");if(tp)tp.textContent="👥 파티 관리 · "+S.party.length+"/"+PARTY_MAX;if(view==="party")renderPartyView();}
-function renderPartyView(){ensureParty();try{renderTrainBox();}catch(er){}try{if(statNo&&!$("statBox").classList.contains("hidden"))setTimeout(renderStat,0);}catch(er){}$("partyCount").textContent=S.party.length+"/"+PARTY_MAX;let h="";
+const boxF={type:"",shiny:false,sort:"no"};
+function boxFilterSort(list){let a=list.slice();if(boxF.type)a=a.filter(n=>String(TYPES[n-1]||"").split(/[\/,\s]+/).includes(boxF.type));if(boxF.shiny)a=a.filter(n=>S.caught[n]&&S.caught[n].shiny);const lv=n=>(mon(n)||{lv:5}).lv;if(boxF.sort==="name")a.sort((x,y)=>myName(x).replace(/^✨/,"").localeCompare(myName(y).replace(/^✨/,""),"ko")||x-y);else if(boxF.sort==="lvd")a.sort((x,y)=>lv(y)-lv(x)||x-y);else if(boxF.sort==="lva")a.sort((x,y)=>lv(x)-lv(y)||x-y);else a.sort((x,y)=>x-y);return a;}
+function initBoxFilter(){const t=$("boxType");if(t&&t.options.length<2){Object.keys(TKO).forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=TKO[k];t.appendChild(o);});}}
+document.addEventListener("change",e=>{const t=e.target;if(!t||!t.id)return;if(t.id==="boxType"){boxF.type=t.value;renderPartyView();}else if(t.id==="boxSort"){boxF.sort=t.value;renderPartyView();}});
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("#boxShiny");if(!b)return;boxF.shiny=!boxF.shiny;b.setAttribute("aria-pressed",boxF.shiny);b.classList.toggle("primary",boxF.shiny);renderPartyView();});
+function renderPartyView(){initBoxFilter();ensureParty();try{renderTrainBox();}catch(er){}try{if(statNo&&!$("statBox").classList.contains("hidden"))setTimeout(renderStat,0);}catch(er){}$("partyCount").textContent=S.party.length+"/"+PARTY_MAX;let h="";
   for(let i=0;i<PARTY_MAX;i++){const n=S.party[i];if(n){const m=mon(n)||{lv:5};h+='<div class="pslot'+(i===0?' lead':'')+'"><canvas width="144" height="126" data-n="'+n+'" data-big="1"></canvas><div class="pbody"><b>'+esc(myName(n))+' <small>Lv'+m.lv+'</small>'+(i===0?' <span class="pill acc">선두</span>':'')+'</b><div>'+tpills(TYPES[n-1])+'</div>'+hpBar(n)+'<small>'+(curHp(n)<=0?'기절 · 기력의조각이 필요해요':'체력 '+curHp(n)+'/'+maxHp(n))+'</small></div><div class="pbtns"><button class="btn sm" data-pm-up="'+i+'" '+(i===0?'disabled':'')+' aria-label="위로">▲</button><button class="btn sm" data-pm-down="'+i+'" '+(i===S.party.length-1?'disabled':'')+' aria-label="아래로">▼</button><button class="btn sm" data-pm-rm="'+n+'" '+(S.party.length<=1?'disabled':'')+'>빼기</button><button class="btn sm" data-stat="'+n+'">상세</button></div></div>';}else h+='<div class="pslot empty" data-open-box="1" style="cursor:pointer"><span>'+(i+1)+'번 칸 · 눌러서 포켓몬 고르기</span></div>';}
-  $("partySlots").innerHTML=h;const rest=Object.keys(S.caught).map(Number).filter(n=>!S.party.includes(n)&&!S.caught[n].sent&&!S.caught[n].gone).sort((a,b)=>a-b);const labList=Object.keys(S.caught).map(Number).filter(n=>S.caught[n].sent&&!S.caught[n].gone).sort((a,b)=>a-b);const full=S.party.length>=PARTY_MAX;
-  {const bs=$("boxSum");if(bs)bs.textContent="📦 보유 포켓몬 보기 · "+rest.length+"마리";}$("boxGrid").querySelectorAll&&0;$("boxGrid").innerHTML=rest.length?rest.map(n=>{const m=mon(n)||{lv:5};return '<div class="bcard clk" data-stat="'+n+'" data-boxpick="'+n+'" role="button" tabindex="0"><canvas width="120" height="96" data-n="'+n+'"></canvas><b>'+esc(myName(n))+'</b><small>Lv'+m.lv+' · '+(curHp(n)<=0?'기절':'체력 '+curHp(n)+'/'+maxHp(n))+'</small></div>';}).join(""):'<div class="small muted" style="grid-column:1/-1">보유한 다른 포켓몬이 없습니다. 더 잡아 보세요!</div>';
+  $("partySlots").innerHTML=h;const restAll=Object.keys(S.caught).map(Number).filter(n=>!S.party.includes(n)&&!S.caught[n].sent&&!S.caught[n].gone).sort((a,b)=>a-b);const rest=boxFilterSort(restAll);const labList=Object.keys(S.caught).map(Number).filter(n=>S.caught[n].sent&&!S.caught[n].gone).sort((a,b)=>a-b);const full=S.party.length>=PARTY_MAX;
+  {const bs=$("boxSum");if(bs)bs.textContent="📦 보유 포켓몬 보기 · "+(rest.length===restAll.length?rest.length+"마리":rest.length+" / "+restAll.length+"마리");const fc=$("boxFcount");if(fc)fc.textContent=rest.length===restAll.length?"":"필터 적용 중";}$("boxGrid").querySelectorAll&&0;$("boxGrid").innerHTML=rest.length?rest.map(n=>{const m=mon(n)||{lv:5};return '<div class="bcard clk" data-stat="'+n+'" data-boxpick="'+n+'" role="button" tabindex="0"><canvas width="120" height="96" data-n="'+n+'"></canvas><b>'+esc(myName(n))+'</b><small>Lv'+m.lv+' · '+(curHp(n)<=0?'기절':'체력 '+curHp(n)+'/'+maxHp(n))+'</small></div>';}).join(""):'<div class="small muted" style="grid-column:1/-1">'+(restAll.length?'조건에 맞는 포켓몬이 없어요. 필터를 바꿔 보세요.':'보유한 다른 포켓몬이 없습니다. 더 잡아 보세요!')+'</div>';
   $("labCount").textContent=labList.length?labList.length+"마리 맡김":"";$("labGrid").innerHTML=labList.length?labList.map(n=>{const m=mon(n)||{lv:5};return '<div class="bcard"><canvas width="120" height="96" data-n="'+n+'"></canvas><b>'+esc(myName(n))+'</b><small>Lv'+m.lv+'</small><button class="btn sm" data-lab-back="'+n+'">데려오기</button><button class="btn sm ghost" data-nick="'+n+'" aria-label="이름 바꾸기">✏️ 이름</button></div>';}).join(""):'<div class="small muted" style="grid-column:1/-1">아직 맡긴 포켓몬이 없어요. 파티에 안 쓰는 포켓몬을 보내 보세요.</div>';
   $("partyNote").textContent=full?"파티가 가득 찼습니다. 다른 포켓몬을 넣으려면 먼저 한 마리를 빼 주세요.":"";startPartyLoop();}
 let nickNo=null;
@@ -16540,5 +16546,30 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
  window.initDb=initDb=function(){window.__ldqDbP=initDbInner();return window.__ldqDbP;};
  const lo=$("logoutBtn").onclick;
  $("logoutBtn").onclick=async function(){try{await sb.auth.signOut();}catch(e){}if(lo)lo.apply(this,arguments);};
+})();
+</script><script>
+(function(){
+ const BUILD_ID="20261020141014";
+ window.LDQ_BUILD=BUILD_ID;
+ let shown=false;
+ function banner(){
+  if(shown)return;shown=true;
+  const d=document.createElement("div");d.id="ldqUpd";
+  d.style.cssText="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:99999;background:#e9b44c;color:#1a1d33;border:3px solid #1a1d33;padding:10px 12px;font:700 14px/1.3 sans-serif;display:flex;gap:10px;align-items:center;justify-content:space-between;box-shadow:4px 4px 0 #1a1d33";
+  d.innerHTML='<span>🆕 새 버전이 나왔어요! 눌러서 업데이트</span><button id="ldqUpdBtn" style="font:800 14px sans-serif;padding:6px 12px;border:2px solid #1a1d33;background:#fff;cursor:pointer">업데이트</button>';
+  document.body.appendChild(d);
+  document.getElementById("ldqUpdBtn").onclick=()=>{try{location.replace(location.pathname+"?v="+Date.now());}catch(e){location.reload();}};
+ }
+ async function check(){
+  try{
+   const r=await fetch(location.pathname+"?_="+Date.now(),{cache:"no-store"});
+   if(!r.ok)return;const t=await r.text();
+   const m=t.match(/const BUILD_ID="([^"]+)"/);
+   if(m&&m[1]!==BUILD_ID)banner();
+  }catch(e){}
+ }
+ setTimeout(check,4000);
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)check();});
+ setInterval(check,300000);
 })();
 </script></body></html>
