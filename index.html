@@ -9546,7 +9546,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b
 function campInfo(){const days=Math.max(10,S.camp.days||100);const di=Math.min(days,Math.max(1,daysBetween(S.camp.start,todayStr())+1));const req=Math.min(TOTAL,Math.ceil(TOTAL*di/days));return{days,di,req};}
 function clearedCount(){return Object.keys(S.cleared||{}).length;}
 function streakDays(){try{const d=new Date();let n=0;const act=x=>x&&((x.win||0)+(x.review||0)+(x.talk||0)+(x.write||0)+(x.login||0))>0;const key=dt=>dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");if(!act(S.days[key(d)]))d.setDate(d.getDate()-1);while(act(S.days[key(d)])){n++;d.setDate(d.getDate()-1);if(n>400)break;}return n;}catch(e){return 0;}}
-function renderCamp(){try{applyComp();}catch(e){}try{applyComp2();}catch(e){}try{applyOpenTen();}catch(e){}hpGift();try{applyName();initNick();}catch(e){}try{const tt=$("toTower");if(tt)tt.textContent="🗼 단어의 탑"+(S.towerBest?" · 최고 "+S.towerBest+"층":"");}catch(e){}try{renderStrip();}catch(e){}S.pos=clearedCount();const {days,di,req}=campInfo();$("campDay").textContent="외노자 되기 DAY "+di+" / "+days+(S.lap>1?"  ·  "+S.lap+"회차":"")+(streakDays()>1?"  ·  🔥 "+streakDays()+"일 연속":"");$("campBar").style.width=Math.round(S.pos/TOTAL*100)+"%";$("campGoal").textContent="오늘까지 목표: "+req+"명 클리어 ("+(ENC[req-1]?ENC[req-1].stage.name:"")+")";$("campPos").textContent="클리어 "+S.pos+" / "+TOTAL+" · 만난 표현 "+Object.keys(S.seenQ||{}).length+"개";const st=$("campStatus");const diff=S.pos-req;let tip="";if(S.pos>=TOTAL){st.className="pill good";st.textContent="전원 클리어";tip="이박사: 야르르르이히~! 다 깼구먼! 미국 가서도 신바람 나게!";}else if(diff>=0){st.className="pill good";st.textContent=diff>0?"목표보다 "+diff+"명 앞섬":"오늘 목표 달성";tip=diff>0?"이박사: 야르르르이히~! 목표보다 앞서가네! 이 기세로 쭉!":"이박사: 오늘 목표 끝! 신바람 나는 하루구먼!";}else{st.className="pill "+(diff<-5?"bad":"warn");st.textContent="오늘 "+(-diff)+"명 남음";tip=diff<-5?"이박사: 많이 밀렸구먼! 스트레스 받지 말고 한 명씩! 야르르르이히~!":"이박사: 오늘 "+(-diff)+"명만 더 이기면 되네! 신바람 나게 가 보자고!";}$("profTip").textContent=tip;try{const hc=$("hdrCamp");hc.textContent="DAY "+di+"/"+days+" · "+st.textContent;hc.dataset.tip=$("campGoal").textContent+"\n"+$("campPos").textContent+"\n"+tip;}catch(e){}}
+function renderCamp(){try{applyComp();}catch(e){}try{applyComp2();}catch(e){}try{applyComp3();}catch(e){}try{applyOpenTen();}catch(e){}hpGift();try{applyName();initNick();}catch(e){}try{const tt=$("toTower");if(tt)tt.textContent="🗼 단어의 탑"+(S.towerBest?" · 최고 "+S.towerBest+"층":"");}catch(e){}try{renderStrip();}catch(e){}S.pos=clearedCount();const {days,di,req}=campInfo();$("campDay").textContent="외노자 되기 DAY "+di+" / "+days+(S.lap>1?"  ·  "+S.lap+"회차":"")+(streakDays()>1?"  ·  🔥 "+streakDays()+"일 연속":"");$("campBar").style.width=Math.round(S.pos/TOTAL*100)+"%";$("campGoal").textContent="오늘까지 목표: "+req+"명 클리어 ("+(ENC[req-1]?ENC[req-1].stage.name:"")+")";$("campPos").textContent="클리어 "+S.pos+" / "+TOTAL+" · 만난 표현 "+Object.keys(S.seenQ||{}).length+"개";const st=$("campStatus");const diff=S.pos-req;let tip="";if(S.pos>=TOTAL){st.className="pill good";st.textContent="전원 클리어";tip="이박사: 야르르르이히~! 다 깼구먼! 미국 가서도 신바람 나게!";}else if(diff>=0){st.className="pill good";st.textContent=diff>0?"목표보다 "+diff+"명 앞섬":"오늘 목표 달성";tip=diff>0?"이박사: 야르르르이히~! 목표보다 앞서가네! 이 기세로 쭉!":"이박사: 오늘 목표 끝! 신바람 나는 하루구먼!";}else{st.className="pill "+(diff<-5?"bad":"warn");st.textContent="오늘 "+(-diff)+"명 남음";tip=diff<-5?"이박사: 많이 밀렸구먼! 스트레스 받지 말고 한 명씩! 야르르르이히~!":"이박사: 오늘 "+(-diff)+"명만 더 이기면 되네! 신바람 나게 가 보자고!";}$("profTip").textContent=tip;try{const hc=$("hdrCamp");hc.textContent="DAY "+di+"/"+days+" · "+st.textContent;hc.dataset.tip=$("campGoal").textContent+"\n"+$("campPos").textContent+"\n"+tip;}catch(e){}}
 
 /* ---------- world (top-down rooms) ---------- */
 const TS=48;
@@ -16436,6 +16436,9 @@ function applyComp(){if(ACCT!=="yhs"||!S.intro||S.comp1)return;let done=null;try
 function applyComp2(){if(ACCT!=="yhs"||!S.intro||S.comp2)return;let done=null;try{done=localStorage.getItem("ldq_comp2_yhs");}catch(e){}if(done){S.comp2=+done||1;return;}
  S.comp2=Date.now();try{localStorage.setItem("ldq_comp2_yhs",String(S.comp2));}catch(e){}addCoins(1200);save();hud();try{renderShop();}catch(e){}
  try{showBanner("🎁 야생에서 잡은 포켓몬이 저장되지 않았던 보상으로 코인 1200개를 드렸어요!");}catch(e){}try{toast("🎁 보상 코인 +1200!");}catch(e){}}
+function applyComp3(){if(ACCT!=="yhs"||!S.intro||S.comp3)return;let done=null;try{done=localStorage.getItem("ldq_comp3_yhs");}catch(e){}if(done){S.comp3=+done||1;return;}
+ S.comp3=Date.now();try{localStorage.setItem("ldq_comp3_yhs",String(S.comp3));}catch(e){}addCoins(1100);save();hud();try{renderShop();}catch(e){}
+ try{showBanner("🎁 가챠 보장 기준이 달라 영웅을 놓친 보상으로 코인 1100개를 드렸어요!");}catch(e){}try{toast("🎁 보상 코인 +1100!");}catch(e){}}
 function boot(acct){ACCT=acct;bgm(null);askPerms();setTimeout(()=>{try{if(S.partner){loadAtlas("pokemon/"+S.partner);loadAtlas("pokemon/back/"+S.partner);}}catch(e){}},0);applyName();initNick();initReset();$("loginOv").classList.add("hidden");$("loginMsg").textContent="";loadLocal();renderAll();let t0="adv";try{t0=localStorage.getItem("ldq_tab")||"adv";}catch(e){}if(location.hash){const h=location.hash.slice(1);if($("v-"+h))t0=h;}show(t0);placePlayer(true,true);initDb();applyLook();dailyBonus();runFlow();}
 function dailyBonus(){const t=todayStr();day().login=1;if(S.lastLogin===t)return;const prev=S.lastLogin;S.lastLogin=t;let n=1;if(prev){const d=daysBetween(prev,t);n=d===1?Math.min(7,(S.loginStreak||0)+1):1;}S.loginStreak=n;const c=10*n;addCoins(c);save();hud();setTimeout(()=>toast("🎁 오늘의 접속 보너스! 코인 +"+c+" ("+n+"일 연속)"),1800);}
 /* ---- flow: intro -> character -> starter ---- */
@@ -16573,7 +16576,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
   if(Array.isArray(R.missed)){L.missed=Array.from(new Set((L.missed||[]).concat(R.missed))).filter(n=>!L.caught[n]);}
   if(remoteWins){for(const k of ["coins","balls","superBalls","repelSteps","lureSteps","lastLogin","loginStreak","party","partner","evoItems","custom","weak","seenQ","flags","stats","writes","talkSeen","cards","look"])if(R[k]!==undefined)L[k]=clone(R[k]);}
   if(R.tname&&!L.tname)L.tname=R.tname;
-  if(R.openPika&&!L.openPika)L.openPika=R.openPika;if(R.comp1&&!L.comp1)L.comp1=R.comp1;if(R.openTen&&!L.openTen)L.openTen=R.openTen;if(R.openSupply&&!L.openSupply)L.openSupply=R.openSupply;if(R.comp2&&!L.comp2)L.comp2=R.comp2;
+  if(R.openPika&&!L.openPika)L.openPika=R.openPika;if(R.comp1&&!L.comp1)L.comp1=R.comp1;if(R.openTen&&!L.openTen)L.openTen=R.openTen;if(R.openSupply&&!L.openSupply)L.openSupply=R.openSupply;if(R.comp2&&!L.comp2)L.comp2=R.comp2;if(R.comp3&&!L.comp3)L.comp3=R.comp3;
   if(!Array.isArray(L.party)||!L.party.length)L.party=clone(R.party||[]);
  }
  async function initDbInner(){
@@ -16618,7 +16621,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
 })();
 </script><script>
 (function(){
- const BUILD_ID="20261021232308";
+ const BUILD_ID="20261021232701";
  window.LDQ_BUILD=BUILD_ID;
  let shown=false;
  function banner(){
