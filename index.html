@@ -9428,7 +9428,7 @@ function gcPull(n,free){const cost=free?0:(n===10?1100:120);if(!free&&(S.coins||
   let note="";const had=(S.caught[no]&&!S.caught[no].gone)?S.caught[no]:null;
   if(!had){acquire(no,{at:todayStr(),where:"가챠",lv:gcLevel(no,band),xp:0});if(shiny)S.caught[no].shiny=true;try{addToParty(no);}catch(e){}note="NEW!";}
   else if(shiny&&!had.shiny){had.shiny=true;note="✨ 이로치로 변신!";}
-  else{const slv=gcLevel(no,band);spares(had).push({lv:slv,xp:0,shiny:!!shiny});gainXpTo(no,30);note="중복 · 새 카드 추가 (Lv"+slv+")";}
+  else{const slv=gcLevel(no,band);spares(had).push({lv:slv,xp:0,shiny:!!shiny});gainXpTo(no,30);note="";}
   out.push({no,band,shiny,note,isNew:!had});}
  S.gcCount=(S.gcCount||0)+n;save();hud();try{renderShop();renderStrip();}catch(e){}
  try{sfx.get();}catch(e){}
@@ -16576,7 +16576,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
 })();
 </script><script>
 (function(){
- const BUILD_ID="20261021204110";
+ const BUILD_ID="20261021204353";
  window.LDQ_BUILD=BUILD_ID;
  let shown=false;
  function banner(){
