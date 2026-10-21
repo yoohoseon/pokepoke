@@ -16483,7 +16483,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
   try{
    let ok=false;
    if(!pw){ok=!!(await sessionFor(id));if(!ok){$("loginMsg").textContent="암호를 넣어 주게.";return;}}
-   else{const r=await sb.auth.signInWithPassword({email:MAIL(id),password:pw});if(r.error){$("loginMsg").textContent="암호가 틀렸네! 다시 넣어 보게.";$("pw").value="";return;}ok=true;}
+   else{const r=await sb.auth.signInWithPassword({email:MAIL(id),password:pw});if(r.error){$("loginMsg").textContent="암호가 틀렸네! 다시 넣어 보게. ["+String(r.error.message||r.error.code||"error").slice(0,70)+"]";$("pw").value="";return;}ok=true;}
    try{localStorage.setItem("ldq_acct",id);if($("rememberMe").checked)localStorage.setItem("ldq_remember",JSON.stringify({id}));else localStorage.removeItem("ldq_remember");}catch(e){}
    loadOv(true);const t0=performance.now();
    await preseed(id);
@@ -16558,7 +16558,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
 })();
 </script><script>
 (function(){
- const BUILD_ID="20261021095316";
+ const BUILD_ID="20261021095550";
  window.LDQ_BUILD=BUILD_ID;
  let shown=false;
  function banner(){
