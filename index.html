@@ -343,7 +343,7 @@ details.adv[open] summary::after{content:"▴"}
   #v-adv:not(.inbattle) .dpad{position:fixed;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:6;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:3px;opacity:.9;transition:opacity .2s}#v-adv .dpad.dp-off{opacity:0;pointer-events:none}
   #v-adv:not(.inbattle) .dpad .btn{font-size:18px;background:var(--surface)}
   #v-adv.inbattle .dpad{display:none}
-  #v-adv:not(.inbattle) .mapwrap{aspect-ratio:16/9}
+  #v-adv:not(.inbattle) .mapwrap{aspect-ratio:4/5;max-height:68vh;max-height:68dvh}
   .wrap{padding-bottom:210px}
   .top-in{padding-top:6px}
 }
@@ -16602,7 +16602,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
 })();
 </script><script>
 (function(){
- const BUILD_ID="20261021211709";
+ const BUILD_ID="20261021211951";
  window.LDQ_BUILD=BUILD_ID;
  let shown=false;
  function banner(){
