@@ -9429,7 +9429,7 @@ function gcShowGrid(out){const el=$("gachaRes");if(!el)return;
 function gcPull(n,free){const cost=free?0:(n===10?1100:120);if(!free&&(S.coins||0)<cost){toast("코인이 부족해요");return;}S.coins-=cost;const out=[];let gotR=false;const rate=window.__gcShiny!=null?window.__gcShiny:1/20;
  for(let i=0;i<n;i++){S.gcPity=(S.gcPity||0)+1;let force=null;if(S.gcPity>=100)force="E";else if(n===10&&i===9&&!gotR)force="R";
   const band=gcBandRoll(force);const pool=gcPool()[band];const no=pool[rnd(pool.length)];const shiny=Math.random()<rate;
-  if(band==="E"||band==="L")S.gcPity=0;if(band==="L")window.__lastLegend=no;if(GC_ORDER.indexOf(band)>=2)gotR=true;
+  if(S.gcPity>=100)S.gcPity=0;if(band==="L")window.__lastLegend=no;if(GC_ORDER.indexOf(band)>=2)gotR=true;
   let note="";const had=(S.caught[no]&&!S.caught[no].gone)?S.caught[no]:null;
   if(!had){acquire(no,{at:todayStr(),where:"가챠",lv:gcLevel(no,band),xp:0});if(shiny)S.caught[no].shiny=true;try{addToParty(no);}catch(e){}note="NEW!";}
   else if(shiny&&!had.shiny){had.shiny=true;note="✨ 이로치로 변신!";}
@@ -16618,7 +16618,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
 })();
 </script><script>
 (function(){
- const BUILD_ID="20261021230537";
+ const BUILD_ID="20261021232308";
  window.LDQ_BUILD=BUILD_ID;
  let shown=false;
  function banner(){
