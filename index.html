@@ -9382,6 +9382,7 @@ function gcBandRoll(force){let band="C";const r=Math.random();let acc=0;for(cons
 const ANNQ=[];let annBusy=false;
 function showBanner(text){ANNQ.push(text);if(!annBusy)nextBanner();}
 function nextBanner(){const t=ANNQ.shift();const b=$("annBanner");if(!t||!b){annBusy=false;return;}annBusy=true;b.textContent=t;b.classList.remove("hidden");b.style.animation="none";void b.offsetWidth;b.style.animation="";try{sfx.win();}catch(e){}setTimeout(()=>{b.classList.add("hidden");setTimeout(nextBanner,300);},6500);}
+function wildShinyAnnounce(no){const who=WN(ACCT);const text=fixJosa("축하합니다! "+who+"님이 야생에서 이로치 "+NAMES[spec(no)-1]+"을(를) 잡았습니다!");try{showBanner("✨ "+text);}catch(e){}try{if(window.LDQ_NET&&window.LDQ_NET.postAnnounce){const pr=window.LDQ_NET.postAnnounce({kind:"wild_shiny",text,account:ACCT});if(pr&&pr.catch)pr.catch(()=>{});}}catch(e){}}
 function gcLegendAnnounce(o){if(S.caught[o.no])S.caught[o.no].annPosted=true;const who=WN(ACCT);const lab=(o.shiny?"이로치 ":"")+(o.band==="L"?"전설 ":o.band==="E"?"영웅 ":"");const text=fixJosa("축하합니다! "+who+"님이 "+lab+NAMES[spec(o.no)-1]+"을(를) 뽑았습니다!");showBanner("🎉 "+text);try{if(window.LDQ_NET&&window.LDQ_NET.postAnnounce){const pr=window.LDQ_NET.postAnnounce({kind:o.band==="L"?"legend":"gacha",text,account:ACCT});if(pr&&pr.catch)pr.catch(()=>{});}}catch(e){}}
 function updateNewsDot(){const d=$("newsDot");if(!d)return;const un=(FR.news||[]).some(r=>r.account!==ACCT&&r.created_at>(S.newsSeen||""));d.classList.toggle("hidden",!un||view==="friends");}
 function backfillLegend(){try{if(!window.LDQ_NET||!window.LDQ_NET.postAnnounce||!ACCT)return;const who=WN(ACCT);const t0=addDays(todayStr(),-1);for(const k of Object.keys(S.caught||{})){const c=S.caught[k];if(!c||c.annPosted||c.where!=="가챠"||!GC_LEG.includes(+k)||c.at<t0)continue;c.annPosted=true;save();const text="축하합니다! "+who+"님이 전설 "+NAMES[spec(k)-1]+"을(를) 뽑았습니다!";const pr=window.LDQ_NET.postAnnounce({kind:"legend",text,account:ACCT});if(pr&&pr.catch)pr.catch(()=>{});}}catch(e){}}
@@ -16007,12 +16008,13 @@ function throwBall(){if(!B||!B.cap||B.cap.thrown||S.balls+S.superBalls<=0)return
   setTimeout(()=>{if(!B||!B.cap)return;B.anim.shrink=performance.now();c.shrink=1;},450);setTimeout(()=>{if(!B||!B.cap)return;c.inBall=true;},800);
   for(let i=0;i<c.shakes;i++)setTimeout(()=>{if(B&&B.cap)sfx.bounce();},1000+i*500+250);
   const total=1000+c.shakes*500+200;
-  setTimeout(()=>{if(!B||!B.cap)return;if(c.result==="caught"){sfx.get();const no=B.no;acquire(no,{at:todayStr(),where:B.e.stage.name,lv:Math.max(enemyLv(B.e),stageMin(no)),xp:0});if(B.shiny)S.caught[no].shiny=true;S.missed=S.missed.filter(x=>x!==no);if(!S.partner)S.partner=no;{const dd=day();dd.catch=(dd.catch||0)+1;}addToParty(no);save();hud();say("GET! "+(B.shiny?"✨ 이로치 ":"")+NAMES[spec(no)-1]+"을(를) 잡았다!",S.party.includes(no)?"도감에 등록되고 파티에 합류했습니다.":"도감에 등록되었습니다. 파티가 가득 차서(5마리) 도감에서 바꿀 수 있어요.");$("qArea").innerHTML='<div class="row"><button class="btn primary" id="goOn">계속</button></div>';$("goOn").onclick=()=>{finishBattle();};}
+  setTimeout(()=>{if(!B||!B.cap)return;if(c.result==="caught"){sfx.get();const no=B.no;acquire(no,{at:todayStr(),where:B.e.stage.name,lv:Math.max(enemyLv(B.e),stageMin(no)),xp:0});if(B.shiny){S.caught[no].shiny=true;try{wildShinyAnnounce(no);}catch(e){}}S.missed=S.missed.filter(x=>x!==no);if(!S.partner)S.partner=no;{const dd=day();dd.catch=(dd.catch||0)+1;}addToParty(no);save();hud();say("GET! "+(B.shiny?"✨ 이로치 ":"")+NAMES[spec(no)-1]+"을(를) 잡았다!",S.party.includes(no)?"도감에 등록되고 파티에 합류했습니다.":"도감에 등록되었습니다. 파티가 가득 차서(5마리) 도감에서 바꿀 수 있어요.");$("qArea").innerHTML='<div class="row"><button class="btn primary" id="goOn">계속</button></div>';$("goOn").onclick=()=>{finishBattle();};}
     else{sfx.miss();c.inBall=false;c.shrink=null;delete B.anim.shrink;c.thrown=false;save();say("앗! 빠져나왔다!","남은 볼 "+S.balls+"개");$("throwBtn").disabled=S.balls<=0;$("throwBtn").textContent="몬스터볼 던지기 (볼 "+S.balls+"개)";$("skipBtn").disabled=false;if(S.balls<=0){$("capMsg").textContent="몬스터볼이 다 떨어졌다. 훈련에서 볼을 얻어 다시 오세요.";if(!S.missed.includes(B.no))S.missed.push(B.no);save();}}},total);}
 function renderMissed(){const box=$("missedBox");if(box)box.classList.add("hidden");}
 function meetWild(no){if(B||MODE!=="map")return;if(!S.partner){toast("파트너 포켓몬이 없습니다");return;}const base=ENC_BY_NO[no];if(!base)return;show("adv");const e=Object.assign({},base,{wildQuiz:true,boss:false,i:-1,name:"야생의 "+NAMES[spec(no)-1],title:"야생",line:""});startBattle(e,false);}
 
 /* ---------- dex ---------- */
+document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#newsTgl")){FR.newsOpen=!FR.newsOpen;try{renderFriends();}catch(er){}}});
 let dexF="all",dexSel=null,dexAnim=null;
 document.querySelectorAll("#v-dex .chip").forEach(c=>c.onclick=()=>{dexF=c.dataset.f;document.querySelectorAll("#v-dex .chip").forEach(x=>x.setAttribute("aria-pressed",x.dataset.f===dexF));renderDex();});
 let dexGen=1;
@@ -16346,7 +16348,7 @@ function paintIcons(root){root.querySelectorAll("canvas[data-ic]").forEach(cv=>{
 function agoTxt(ts){const m=Math.max(0,Math.round((Date.now()-new Date(ts).getTime())/60000));return m<1?"방금":m<60?m+"분 전":m<1440?Math.floor(m/60)+"시간 전":Math.floor(m/1440)+"일 전";}
 function rankNewsHtml(){const rk=(FR.profiles||[]).slice().sort((a,b)=>((b.stage_cleared||0)-(a.stage_cleared||0))||((b.caught||0)-(a.caught||0))||((b.wins||0)-(a.wins||0)));
  let h='<h3 style="margin:6px 0 0;font-size:15px">📢 소식</h3>';
- const nw=(FR.news||[]).slice(0,10);h+=nw.length?'<div class="stack" style="gap:4px">'+nw.map(r=>'<div class="small" style="padding:6px 8px;background:var(--soft)">🎉 '+esc(r.text)+' <span class="muted">· '+agoTxt(r.created_at)+'</span></div>').join("")+'</div>':'<div class="small muted">아직 소식이 없어요. 누군가 전설을 뽑으면 여기에 떠요.</div>';
+ const nwAll=(FR.news||[]).slice(0,30),nwShow=nwAll.slice(0,FR.newsOpen?30:5);h+=nwAll.length?'<div class="stack" style="gap:4px">'+nwShow.map(r=>'<div class="small" style="padding:6px 8px;background:var(--soft)">'+(r.kind==="wild_shiny"?'✨ ':'🎉 ')+esc(r.text)+' <span class="muted">· '+agoTxt(r.created_at)+'</span></div>').join("")+(nwAll.length>5?'<button class="btn sm ghost" id="newsTgl" style="align-self:flex-start">'+(FR.newsOpen?'▲ 접기':'▼ 소식 더 보기 ('+Math.min(30,nwAll.length)+'개까지)')+'</button>':'')+'</div>':'<div class="small muted">아직 소식이 없어요. 누군가 전설을 뽑거나 이로치를 잡으면 여기에 떠요.</div>';
  h+='<h3 style="margin:10px 0 0;font-size:15px">🏆 랭킹</h3><div class="stack" style="gap:4px">'+(rk.length?rk.map((p,i)=>'<div class="pslot" style="padding:6px 10px;gap:8px"><b style="min-width:34px">'+(i+1)+'위</b><div class="pbody" style="flex:1;min-width:0"><b>'+esc(WN(p.account))+(p.account===ACCT?' (나)':'')+'</b><div class="small muted">클리어 '+(p.stage_cleared||0)+'/'+STAGES.length+' · 도감 '+(p.caught||0)+'/'+NMON+' · 승리 '+(p.wins||0)+'</div></div></div>').join(""):'<div class="small muted">랭킹을 불러오는 중이에요.</div>')+'</div>';return h;}
 function renderFriends(){try{if((FR.news||[]).length){const nw=FR.news.filter(r=>r.account!==ACCT).map(r=>r.created_at).sort().pop();if(nw&&nw>(S.newsSeen||"")){S.newsSeen=nw;save();}}updateNewsDot();}catch(e){}const cv=$("frCard");if(cv)drawCard(cv,myProfile());const box=$("frNet");if(!box)return;
  if(!FR.loaded&&!FR.busy)loadFriends().then(()=>{if(view==="friends")renderFriends();});
@@ -16502,7 +16504,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
   async listProfiles(){const r=await sb.from("profiles").select("*").order("updated_at",{ascending:false}).limit(20);if(r.error)throw r.error;return r.data.map(x=>{const m=String(x.look||"").split("#");x.look=m[0]||null;x.nick=m.slice(1).join("#")||"";if(x.nick)window.__nick&&(window.__nick[x.account]=x.nick);return x;});},
   async listTrades(){const uid=await myUid();const r=await sb.from("trades").select("*").or("from_user.eq."+uid+",to_user.eq."+uid).order("created_at",{ascending:false}).limit(40);if(r.error)throw r.error;return r.data;},
   async createTrade(t){const uid=await myUid();const r=await sb.from("trades").insert(Object.assign({from_user:uid},t));if(r.error)throw r.error;},
-  async listAnnouncements(since){const r=await sb.from("announcements").select("*").gte("created_at",since).order("created_at",{ascending:false}).limit(20);if(r.error)throw r.error;return r.data;},
+  async listAnnouncements(since){const r=await sb.from("announcements").select("*").gte("created_at",since).order("created_at",{ascending:false}).limit(30);if(r.error)throw r.error;return r.data;},
   async postBug(r){const uid=await myUid();const x=await sb.from("bug_reports").insert({user_id:uid,account:r.account,text:r.text,ctx:r.ctx||{}});if(x.error)throw x.error;},
   async postAnnounce(a){const uid=await myUid();const r=await sb.from("announcements").insert({user_id:uid,account:a.account,kind:a.kind,text:a.text});if(r.error)throw r.error;},
   async updateTrade(id,patch){const r=await sb.from("trades").update(Object.assign({},patch,{updated_at:new Date().toISOString()})).eq("id",id);if(r.error)throw r.error;}
@@ -16609,7 +16611,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
 })();
 </script><script>
 (function(){
- const BUILD_ID="20261021212348";
+ const BUILD_ID="20261021212801";
  window.LDQ_BUILD=BUILD_ID;
  let shown=false;
  function banner(){
