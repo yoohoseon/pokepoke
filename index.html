@@ -15930,7 +15930,8 @@ function trainQ(e){const T=S.train||{mode:"mix"};const lv=(mon(e.trainNo)||{lv:5
  else if(T.mode==="vocab"){q=makeTypeQ(Math.random()<0.5?"vocab":"vocab_rev",tier);}
  else{const r=Math.random();if(r<0.3)q=makeGrammarQ();else if(r<0.5&&Object.keys(S.wrongBook||{}).length){const ids=Object.keys(S.wrongBook);q=makeQById(ids[rnd(ids.length)]);}else if(r<0.7)q=makeTypeQ(Math.random()<0.5?"vocab":"vocab_rev",tier);}
  return q||makeQ("work",tier);}
-function trainEnemy(n){const no=MON_ORDER[rnd(30)];return{wildQuiz:true,train:true,trainNo:n,boss:false,i:-1,no,bst:BST[spec(no)-1],tier:1,name:"트레이닝",title:"트레이닝",line:"",stage:STAGES[Math.min(STAGES.length-1,objIdx())],shiny:false};}
+const TRAIN_FOES=[6,9,3,94,130,149,143,131,65,68,59,150,248,373,376,445,448,257,260,254,282,359,350,392,395,658,724,812,815,818,887,249,250,384,483,484,643,644];
+function trainEnemy(n){let pool=TRAIN_FOES;try{const cap=genCap();const f=TRAIN_FOES.filter(x=>genOf(x)<=cap);if(f.length>=6)pool=f;}catch(e){}const no=pool[rnd(pool.length)];return{wildQuiz:true,train:true,trainNo:n,boss:false,i:-1,no,bst:BST[spec(no)-1],tier:1,name:"트레이닝",title:"트레이닝",line:"",stage:STAGES[Math.min(STAGES.length-1,objIdx())],shiny:false};}
 let trainSel=null;
 function startTrain(mode){if(B||MODE!=="map"){return;}ensureParty();const n=trainSel&&S.caught[trainSel]&&!S.caught[trainSel].gone?trainSel:S.party[0];if(!n){toast("트레이닝할 포켓몬이 없어요");return;}if(curHp(n)<=0){toast("기절한 포켓몬은 트레이닝할 수 없어요. 먼저 회복해 주세요");return;}
  S.train={n,mode,qs:0,ok:0,xp:0,total:10};save();show("adv");startBattle(trainEnemy(n),false);}
@@ -16614,7 +16615,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
 })();
 </script><script>
 (function(){
- const BUILD_ID="20261021225732";
+ const BUILD_ID="20261021230234";
  window.LDQ_BUILD=BUILD_ID;
  let shown=false;
  function banner(){
