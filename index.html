@@ -917,7 +917,7 @@ const rnd=n=>Math.floor(Math.random()*n);
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
 const EPOCH=2;
 const def=()=>({lastLogin:"",loginStreak:0,inCity:true,evoItems:{},coins:0,superBalls:0,repelSteps:0,lureSteps:0,party:[],epoch:EPOCH,starter:null,intro:false,look:null,cleared:{},room:0,cleared:{},room:0,target:"2027-12-01",camp:{start:todayStr(),days:100},pos:0,caught:{},missed:[],balls:5,partner:null,xp:0,wins:0,losses:0,cards:{},custom:[],days:{},writes:[],lap:1});
-const ACCOUNTS=["kjs","yhs","ktm","test01","pyo"],WHO={kjs:"김준석",yhs:"유호선",ktm:"김태민",test01:"테스터",pyo:"pyo"},PASS="__supabase_login_only__";let ACCT=null;const BADW=["시발", "씨발", "쓰발", "씹", "개새", "색끼", "좆", "존나", "졸라", "병신", "븅신", "빙신", "지랄", "염병", "엠창", "느금", "니미", "니애미", "패드립", "닥쳐", "꺼져", "미친", "또라이", "썅", "쌍년", "쌍놈", "창녀", "걸레", "보지", "자지", "섹스", "성교", "야동", "포르노", "강간", "딸딸", "딸치", "자위", "김치녀", "된장녀", "일베", "메갈", "홍어", "쪽바리", "짱깨", "니거", "뒤져", "디져", "뒤질", "ㅅㅂ", "ㅆㅂ", "ㅂㅅ", "ㅄ", "ㅈㄹ", "ㅈㄴ", "ㅁㅊ", "ㅅㄲ", "ㄱㅅㄲ", "ㅗ", "ㄲㅈ", "ㄷㅊ", "새끼야", "씹새", "개새끼", "애미"];const BADE=["fuck", "fck", "shit", "bitch", "bastard", "asshole", "pussy", "cunt", "slut", "whore", "nigger", "nigga", "fag", "retard", "porn", "nazi", "hitler", "dickhead", "cocksucker", "sexy"];
+const ACCOUNTS=["kjs","yhs","ktm","test01","pyo","test02"],TEST_ACCTS=["test01","test02"],WHO={kjs:"김준석",yhs:"유호선",ktm:"김태민",test01:"테스터",pyo:"pyo",test02:"테스터2"},PASS="__supabase_login_only__";let ACCT=null;const BADW=["시발", "씨발", "쓰발", "씹", "개새", "색끼", "좆", "존나", "졸라", "병신", "븅신", "빙신", "지랄", "염병", "엠창", "느금", "니미", "니애미", "패드립", "닥쳐", "꺼져", "미친", "또라이", "썅", "쌍년", "쌍놈", "창녀", "걸레", "보지", "자지", "섹스", "성교", "야동", "포르노", "강간", "딸딸", "딸치", "자위", "김치녀", "된장녀", "일베", "메갈", "홍어", "쪽바리", "짱깨", "니거", "뒤져", "디져", "뒤질", "ㅅㅂ", "ㅆㅂ", "ㅂㅅ", "ㅄ", "ㅈㄹ", "ㅈㄴ", "ㅁㅊ", "ㅅㄲ", "ㄱㅅㄲ", "ㅗ", "ㄲㅈ", "ㄷㅊ", "새끼야", "씹새", "개새끼", "애미"];const BADE=["fuck", "fck", "shit", "bitch", "bastard", "asshole", "pussy", "cunt", "slut", "whore", "nigger", "nigga", "fag", "retard", "porn", "nazi", "hitler", "dickhead", "cocksucker", "sexy"];
 function nameBad(t){const raw=String(t||"").toLowerCase();if(!raw)return false;const a=raw.replace(/[^가-힣ㄱ-ㅎㅏ-ㅣa-z0-9]/g,"");const b=a.replace(/(.)\1+/g,"$1");const e=raw.replace(/[0@]/g,"o").replace(/[1!|]/g,"i").replace(/\$/g,"s").replace(/[^a-z]/g,"");const e2=e.replace(/(.)\1+/g,"$1");if(/[시씨쓰]+[이으]*[발빨]/.test(a))return true;for(const w of BADW){if(a.includes(w)||b.includes(w))return true;}for(const w of BADE){if(e.includes(w)||e2.includes(w))return true;}return false;}
 const NICK={};function WN(a){const v=(a===ACCT&&S.tname)||NICK[a]||"";return (v&&!nameBad(v)?v:"")||WHO[a]||a||"트레이너";}window.__nick=NICK;function applyName(){try{if(!S.tname){const t=localStorage.getItem("ldq_tname_"+ACCT);if(t)S.tname=t;}}catch(e){}try{$("hdrWho").textContent=WN(ACCT)+" 트레이너";}catch(e){}}
 let S=def();
@@ -16362,9 +16362,9 @@ function initNick(){const i=$("tnIn");if(i&&document.activeElement!==i)i.value=S
 document.addEventListener("click",e=>{const t=e.target;if(t&&t.closest&&t.closest("#tnSave"))tnSave();});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target&&e.target.id==="tnIn"){e.preventDefault();tnSave();}});
 let rstArm=false;
-async function resetTestAcct(){const m=$("rstMsg"),b=$("rstBtn");if(ACCT!=="test01")return;if(!rstArm){rstArm=true;b.textContent="정말 초기화할까요? 한 번 더 누르세요";setTimeout(()=>{rstArm=false;b.textContent="초기화";},4000);return;}rstArm=false;b.disabled=true;m.textContent="초기화하는 중…";const tg=S.target;S=Object.assign(def(),{target:tg||"2027-12-01"});sanitize();saveLocal();try{localStorage.removeItem("ldq_tname_"+ACCT);}catch(e){}let ok=true;try{if(window.resetMyServer)ok=await window.resetMyServer();}catch(e){ok=false;}m.textContent=ok?"✅ 초기화했어요. 새로 시작합니다…":"⚠️ 서버 초기화에 실패했어요. 이 기기만 초기화됐어요";setTimeout(()=>location.reload(),1200);}
+async function resetTestAcct(){const m=$("rstMsg"),b=$("rstBtn");if(!TEST_ACCTS.includes(ACCT))return;if(!rstArm){rstArm=true;b.textContent="정말 초기화할까요? 한 번 더 누르세요";setTimeout(()=>{rstArm=false;b.textContent="초기화";},4000);return;}rstArm=false;b.disabled=true;m.textContent="초기화하는 중…";const tg=S.target;S=Object.assign(def(),{target:tg||"2027-12-01"});sanitize();saveLocal();try{localStorage.removeItem("ldq_tname_"+ACCT);}catch(e){}let ok=true;try{if(window.resetMyServer)ok=await window.resetMyServer();}catch(e){ok=false;}m.textContent=ok?"✅ 초기화했어요. 새로 시작합니다…":"⚠️ 서버 초기화에 실패했어요. 이 기기만 초기화됐어요";setTimeout(()=>location.reload(),1200);}
 document.addEventListener("click",e=>{if(e.target&&e.target.closest&&e.target.closest("#rstBtn"))resetTestAcct();});
-function initReset(){const b=$("rstBox");if(b)b.classList.toggle("hidden",ACCT!=="test01");}
+function initReset(){const b=$("rstBox");if(b)b.classList.toggle("hidden",!TEST_ACCTS.includes(ACCT));}
 function pikaOverlay(mode){const T={new:["✨ 오픈 기념 선물, 이로치 피카츄가 왔어요!","레벨 5 이로치 피카츄를 받았어요. 파티에 합류했어요."],up:["✨ 피카츄가 이로치로 빛나요!","이미 갖고 있던 피카츄가 이로치로 바뀌었어요."],dup:["이로치 피카츄를 이미 갖고 있네요!","대신 코인 300개를 드렸어요."]}[mode];
   const o=document.createElement("div");o.id="pikaOv";o.style.cssText="position:fixed;inset:0;z-index:9500;background:rgba(10,12,30,.72);display:flex;align-items:center;justify-content:center;padding:16px";
   o.innerHTML='<div class="box stack" style="max-width:380px;width:100%;background:var(--surface);text-align:center;align-items:center"><div class="eyebrow">OPEN EVENT</div><canvas id="pikaCv" width="240" height="190"></canvas><h2 style="font-size:20px">'+T[0]+'</h2><div class="small muted">'+T[1]+' 계정당 한 번만 받을 수 있는 선물이에요.</div><button class="btn primary" id="pikaOk">좋아요!</button></div>';
@@ -16558,7 +16558,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
 })();
 </script><script>
 (function(){
- const BUILD_ID="20261021094837";
+ const BUILD_ID="20261021095316";
  window.LDQ_BUILD=BUILD_ID;
  let shown=false;
  function banner(){
