@@ -280,6 +280,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--mu
 .stg .face{width:72px;height:72px;display:grid;place-items:center;background:var(--soft);border:2px solid var(--line);overflow:hidden}
 .stg .face img{width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1.42)}
 .stg .face canvas{width:60px;height:60px}
+.newtag{display:inline-block;background:#e5383b;color:#fff;font-weight:800;font-size:12px;padding:3px 10px;margin-bottom:6px;letter-spacing:.02em}
 .gram{margin-top:8px}.gtitle{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:4px}.gchunks{display:flex;flex-wrap:wrap;gap:6px 4px}.gch{display:inline-flex;flex-direction:column;align-items:center;padding:3px 6px 2px;border-bottom:3px solid var(--gc);background:var(--soft)}.gch b{font-size:14px;line-height:1.25}.gch i{font-style:normal;font-size:10px;font-weight:800;color:var(--gc);margin-top:1px}
 .stg .mid{min-width:0;display:flex;flex-direction:column;gap:4px}
 .stg .mid b{font-size:16px}
@@ -9950,7 +9951,7 @@ function drawBattle(ctx,W,H,t,dt){const b=B;const k=W/320;ctx.fillStyle="#000";c
   if(a.foeHit&&el("foeHit")<420&&b.hitCol&&!b.foeGone){const kk=el("foeHit")/420;ctx.save();ctx.globalAlpha=0.6*(1-kk);ctx.fillStyle=b.hitCol;ctx.beginPath();ctx.arc(foeX,foeY-28*k,(26+kk*64)*k,0,Math.PI*2);ctx.fill();ctx.globalAlpha=0.9*(1-kk);ctx.strokeStyle="#fff";ctx.lineWidth=3*k;ctx.beginPath();ctx.arc(foeX,foeY-28*k,(18+kk*80)*k,0,Math.PI*2);ctx.stroke();ctx.restore();}
   if(a.myHit&&el("myHit")<420&&b.hurtCol){const kk=el("myHit")/420;ctx.save();ctx.globalAlpha=0.5*(1-kk);ctx.fillStyle=b.hurtCol;ctx.beginPath();ctx.arc(myX,myY-24*k,(24+kk*50)*k,0,Math.PI*2);ctx.fill();ctx.restore();}
   // info boxes
-  if(!(b.phase==="intro"&&b.step<1)){const lvFoe=b.lvFoe!=null?b.lvFoe:enemyLv(b.e);if(b.dispHp==null)b.dispHp=b.hp;b.dispHp=lerp(b.dispHp,b.hp,Math.min(1,dt/150));prBox(ctx,k,"enemy",8*k,8*k,NAMES[spec(b.no)-1],lvFoe,b.max?b.dispHp/b.max:0,null);drawTypes(ctx,k,12*k,8*k+27*k,TYPES[spec(b.no)-1]);if(b.team&&b.team.length>1)ballRow(ctx,k,12*k,8*k+38*k,b.team.length-b.fi,b.team.length,false);}
+  if(!(b.phase==="intro"&&b.step<1)){const lvFoe=b.lvFoe!=null?b.lvFoe:enemyLv(b.e);if(b.dispHp==null)b.dispHp=b.hp;b.dispHp=lerp(b.dispHp,b.hp,Math.min(1,dt/150));prBox(ctx,k,"enemy",8*k,8*k,NAMES[spec(b.no)-1],lvFoe,b.max?b.dispHp/b.max:0,null);drawTypes(ctx,k,12*k,8*k+27*k,TYPES[spec(b.no)-1]);if(!S.caught[spec(b.no)]){ctx.save();const nx=96*k,ny=8*k+28*k,nw=28*k,nh=10*k;ctx.fillStyle="#e5383b";ctx.fillRect(nx,ny,nw,nh);ctx.fillStyle="#fff";ctx.font="800 "+Math.round(6.5*k)+"px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("NEW",nx+nw/2,ny+nh/2+0.5*k);ctx.restore();}if(b.team&&b.team.length>1)ballRow(ctx,k,12*k,8*k+38*k,b.team.length-b.fi,b.team.length,false);}
   if(b.phase!=="intro"||b.step===2){const m=mon(b.my)||{lv:5};const myLv=(typeof m.lv==="number")?m.lv:5;if(b.dispMe==null)b.dispMe=b.me;b.dispMe=lerp(b.dispMe,b.me,Math.min(1,dt/150));prBox(ctx,k,"player",W-138*k,H-52*k,myName(b.my),myLv,b.dispMe/(b.meMax||3),Math.round(b.dispMe)+"/"+(b.meMax||3));drawTypes(ctx,k,W-120*k,H-52*k+25.5*k,TYPES[spec(b.my)-1]);}}
 
 /* quiz */
@@ -15996,8 +15997,8 @@ $("fleeBtn").onclick=()=>{if(!B||B.wild||B.phase==="lose")return;const e=B.e;ign
 
 /* ---------- capture (inside battle screen) ---------- */
 function startCapture(){if(!B)return;B.phase="capture";const no=B.no;const zone=Math.max(0.14,0.36-no/251*0.22)+(S.superBalls>0?0.14:0);B.cap={pos:0,dir:1,zone,thrown:false,inBall:false,sup:S.superBalls>0};
-  say(NAMES[spec(no)-1]+"이(가) 지쳐서 도망가지 못한다! 몬스터볼을 던지자!","초록 구간에서 던지기(Space)를 누르면 잡힙니다. 볼 "+S.balls+"개"+(S.superBalls?" · 슈퍼볼 "+S.superBalls+"개(구간 확대)":""));
-  $("qArea").innerHTML='<div class="tbar"><div class="zone" style="left:'+((0.5-zone/2)*100)+'%;width:'+(zone*100)+'%"></div><div class="mk" id="mk"></div></div><div class="row"><button class="btn primary" id="throwBtn">몬스터볼 던지기 (볼 '+S.balls+'개)</button><button class="btn sm" id="skipBtn">나중에</button></div><div class="small muted" id="capMsg"></div>';
+  say((S.caught[spec(no)]?"":"NEW! ")+NAMES[spec(no)-1]+"이(가) 지쳐서 도망가지 못한다! 몬스터볼을 던지자!","초록 구간에서 던지기(Space)를 누르면 잡힙니다. 볼 "+S.balls+"개"+(S.superBalls?" · 슈퍼볼 "+S.superBalls+"개(구간 확대)":""));
+  $("qArea").innerHTML=(S.caught[spec(no)]?'':'<div class="newtag">NEW! 도감에 처음 등록돼요</div>')+'<div class="tbar"><div class="zone" style="left:'+((0.5-zone/2)*100)+'%;width:'+(zone*100)+'%"></div><div class="mk" id="mk"></div></div><div class="row"><button class="btn primary" id="throwBtn">몬스터볼 던지기 (볼 '+S.balls+'개)</button><button class="btn sm" id="skipBtn">나중에</button></div><div class="small muted" id="capMsg"></div>';
   $("throwBtn").onclick=throwBall;$("skipBtn").onclick=()=>{if(!S.missed.includes(no)&&!S.caught[no])S.missed.push(no);save();finishBattle();};
   if(S.balls+S.superBalls<=0){$("throwBtn").disabled=true;$("capMsg").textContent="몬스터볼이 없습니다. 상점이나 훈련에서 볼을 얻은 뒤 놓친 포켓몬에서 다시 시도하세요.";}
   let last=performance.now();const loop=t=>{if(!B||!B.cap)return;const c=B.cap;const dt=t-last;last=t;if(!c.thrown){c.pos+=c.dir*Math.min(dt,50)/(1900-Math.min(no,400)*0.75);if(c.pos>1){c.pos=1;c.dir=-1;}if(c.pos<0){c.pos=0;c.dir=1;}const mk=$("mk");if(mk)mk.style.left=(c.pos*100)+"%";}requestAnimationFrame(loop);};requestAnimationFrame(loop);}
@@ -16602,7 +16603,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
 })();
 </script><script>
 (function(){
- const BUILD_ID="20261021211951";
+ const BUILD_ID="20261021212111";
  window.LDQ_BUILD=BUILD_ID;
  let shown=false;
  function banner(){
