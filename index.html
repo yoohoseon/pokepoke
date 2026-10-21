@@ -16011,7 +16011,7 @@ function throwBall(){if(!B||!B.cap||B.cap.thrown||S.balls+S.superBalls<=0)return
   setTimeout(()=>{if(!B||!B.cap)return;B.anim.shrink=performance.now();c.shrink=1;},450);setTimeout(()=>{if(!B||!B.cap)return;c.inBall=true;},800);
   for(let i=0;i<c.shakes;i++)setTimeout(()=>{if(B&&B.cap)sfx.bounce();},1000+i*500+250);
   const total=1000+c.shakes*500+200;
-  setTimeout(()=>{if(!B||!B.cap)return;if(c.result==="caught"){sfx.get();const no=B.no;acquire(no,{at:todayStr(),where:B.e.stage.name,lv:Math.max(enemyLv(B.e),stageMin(no)),xp:0});if(B.shiny){S.caught[no].shiny=true;try{wildShinyAnnounce(no);}catch(e){}}S.missed=S.missed.filter(x=>x!==no);if(!S.partner)S.partner=no;{const dd=day();dd.catch=(dd.catch||0)+1;}addToParty(no);save();hud();say("GET! "+(B.shiny?"✨ 이로치 ":"")+NAMES[spec(no)-1]+"을(를) 잡았다!",S.party.includes(no)?"도감에 등록되고 파티에 합류했습니다.":"도감에 등록되었습니다. 파티가 가득 차서(5마리) 도감에서 바꿀 수 있어요.");$("qArea").innerHTML='<div class="row"><button class="btn primary" id="goOn">계속</button></div>';$("goOn").onclick=()=>{finishBattle();};}
+  setTimeout(()=>{if(!B||!B.cap)return;if(c.result==="caught"){sfx.get();const no=B.no;const had=!!(S.caught[no]&&!S.caught[no].gone);const lvC=Math.max(enemyLv(B.e),stageMin(no));if(had){newInst(no,{where:B.e.stage.name,lv:lvC,shiny:B.shiny?true:undefined});}else{acquire(no,{at:todayStr(),where:B.e.stage.name,lv:lvC,xp:0});if(B.shiny)S.caught[no].shiny=true;}if(B.shiny){try{wildShinyAnnounce(no);}catch(e){}}S.missed=S.missed.filter(x=>x!==no);if(!S.partner)S.partner=no;{const dd=day();dd.catch=(dd.catch||0)+1;}if(!had)addToParty(no);save();hud();say("GET! "+(B.shiny?"✨ 이로치 ":"")+NAMES[spec(no)-1]+(had?" 한 마리 더 잡았다!":"을(를) 잡았다!"),had?"같은 포켓몬이 보유 목록에 새 카드로 들어왔어요 (Lv"+lvC+"). 파티에 넣거나 교환·박사에게 보낼 수 있어요.":(S.party.includes(no)?"도감에 등록되고 파티에 합류했습니다.":"도감에 등록되었습니다. 파티가 가득 차서(5마리) 도감에서 바꿀 수 있어요."));$("qArea").innerHTML='<div class="row"><button class="btn primary" id="goOn">계속</button></div>';$("goOn").onclick=()=>{finishBattle();};}
     else{sfx.miss();c.inBall=false;c.shrink=null;delete B.anim.shrink;c.thrown=false;save();say("앗! 빠져나왔다!","남은 볼 "+S.balls+"개");$("throwBtn").disabled=S.balls<=0;$("throwBtn").textContent="몬스터볼 던지기 (볼 "+S.balls+"개)";$("skipBtn").disabled=false;if(S.balls<=0){$("capMsg").textContent="몬스터볼이 다 떨어졌다. 훈련에서 볼을 얻어 다시 오세요.";if(!S.missed.includes(B.no))S.missed.push(B.no);save();}}},total);}
 function renderMissed(){const box=$("missedBox");if(box)box.classList.add("hidden");}
 function meetWild(no){if(B||MODE!=="map")return;if(!S.partner){toast("파트너 포켓몬이 없습니다");return;}const base=ENC_BY_NO[no];if(!base)return;show("adv");const e=Object.assign({},base,{wildQuiz:true,boss:false,i:-1,name:"야생의 "+NAMES[spec(no)-1],title:"야생",line:""});startBattle(e,false);}
@@ -16614,7 +16614,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
 })();
 </script><script>
 (function(){
- const BUILD_ID="20261021221002";
+ const BUILD_ID="20261021225732";
  window.LDQ_BUILD=BUILD_ID;
  let shown=false;
  function banner(){
