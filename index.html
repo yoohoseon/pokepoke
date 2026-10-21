@@ -549,6 +549,7 @@ details.adv[open] summary::after{content:"▴"}
   <div class="box stack hidden" id="labBox"><div class="row between"><h3 style="margin:0;font-size:16px">🔬 포켓몬 박사 연구소</h3><span class="small muted" id="labCount"></span></div><div class="small muted">파티에 안 쓰는 포켓몬을 박사에게 맡기면 코인을 받아요. 도감에는 그대로 남고, 언제든 데려올 수 있어요.</div><div class="boxgrid" id="labGrid"></div></div>
 </section>
 <section class="view hidden" id="v-shop">
+  <div class="box stack hidden" id="supplyEvt" style="border-color:#2f9e63;background:linear-gradient(135deg,var(--surface),rgba(47,158,99,.14))"><div class="row between" style="gap:8px;flex-wrap:wrap"><div class="stack" style="gap:2px"><b>🎁 오픈 기념 보급품</b><span class="small muted">몬스터볼 100개 + 상처약 30개를 드려요. 계정당 한 번만 받을 수 있어요.</span></div><button class="btn primary" id="toSupply">📦 보급품 받기</button></div></div>
   <div class="box stack hidden" id="pikaEvt" style="border-color:#e9b44c;background:linear-gradient(135deg,var(--surface),rgba(233,180,76,.16))"><div class="row between" style="gap:8px;flex-wrap:wrap"><div class="stack" style="gap:2px"><b>🎁 오픈 기념 이벤트</b><span class="small muted">이로치 피카츄를 선물로 드려요. 계정당 한 번만 받을 수 있어요.</span></div><button class="btn primary" id="toPika" style="animation:pikaPulse 1.4s ease-in-out infinite">✨ 이로치 피카츄 받기</button></div></div>
   <div class="box stack"><div class="row between"><h2 style="margin:0;font-size:18px">🏪 포켓마트</h2><span class="pill acc">코인 <b id="shopCoins">0</b></span></div>
   <div class="small muted">전투에서 이기면 코인이 쌓입니다. 야생 포켓몬과 보스를 이길수록 더 많이 받아요.</div>
@@ -9447,7 +9448,7 @@ function renderGacha(){const info=$("gachaInfo");if(!info)return;const pity=S.gc
  const r=$("gachaRates");if(r){r.textContent="";r.style.display="none";}
  const d=$("gachaDesc");if(d){const L=["도박은 나쁜 거예요! …근데 이로치(✨)가 갖고 싶다면? 뭐, 한번 뽑아 보시든가요 😏","도박 금지! 라고 말하고 싶지만 반짝이는 건 못 참죠 ✨ 일단 한 번만… 아니 한 번 더…","이건 도박이 아니라 '도감 채우기'예요. …라고 믿고 싶은 당신, 환영해요 😈","오늘의 무료 1회는 내일이 되면 사라져요. 모아 둘 순 없으니 부지런히 뽑아요 🎁"];d.textContent=L[new Date().getDate()%L.length];}}
 document.addEventListener("click",e=>{if(e.target.closest("#gc1")){if(S.gcFreeDay!==todayStr()){S.gcFreeDay=todayStr();gcPull(1,true);}else gcPull(1);}else if(e.target.closest("#gc10"))gcPull(10);else if(e.target.closest("#gcFree")){if(S.freeTen>0){S.freeTen--;gcPull(10,true);}}});
-function renderShop(){try{const pe=$("pikaEvt");if(pe)pe.classList.toggle("hidden",!!S.openPika||!S.intro);}catch(e){}renderGacha();renderMissions();const el=$("shopList");if(!el)return;$("shopCoins").textContent=S.coins||0;el.innerHTML=SHOP.map((it,i)=>'<div class="shopitem"><span class="ic">'+it.ic+'</span><span class="tx"><b>'+it.n+'</b><small>'+it.d+(it.own()?' · '+it.own():'')+'</small></span><button class="btn sm primary" data-buy="'+i+'" '+((S.coins||0)<it.c?'disabled':'')+'>'+it.c+' 코인</button></div>').join("");}
+function renderShop(){try{const se=$("supplyEvt");if(se)se.classList.toggle("hidden",!!S.openSupply||!S.intro);}catch(e){}try{const pe=$("pikaEvt");if(pe)pe.classList.toggle("hidden",!!S.openPika||!S.intro);}catch(e){}renderGacha();renderMissions();const el=$("shopList");if(!el)return;$("shopCoins").textContent=S.coins||0;el.innerHTML=SHOP.map((it,i)=>'<div class="shopitem"><span class="ic">'+it.ic+'</span><span class="tx"><b>'+it.n+'</b><small>'+it.d+(it.own()?' · '+it.own():'')+'</small></span><button class="btn sm primary" data-buy="'+i+'" '+((S.coins||0)<it.c?'disabled':'')+'>'+it.c+' 코인</button></div>').join("");}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-buy]");if(!b)return;const it=SHOP[+b.dataset.buy];if(!it||(S.coins||0)<it.c){toast("코인이 부족합니다");return;}S.coins-=it.c;it.f();sfx.get();save();hud();renderShop();toast(it.ic+" "+it.n+" 구매!");});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-evoitem]");if(!b||b.disabled||B)return;const parts=b.dataset.evoitem.split("|");const to=+parts[0],it=parts[1];const n=b.dataset.evomon?+b.dataset.evomon:dexSel;if(!n||!S.caught[n]||((S.evoItems&&S.evoItems[it])||0)<1)return;S.evoItems[it]--;const m=mon(n);m.stop=false;save();hud();startEvo(n,to);});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-evonow]");if(!b||b.disabled||B)return;const n=+b.dataset.evonow;const ev=EVO[n],m=mon(n);if(!ev||!m||m.lv<ev[1]||!evoOk(ev[0]))return;m.stop=false;save();startEvo(n,ev[0]);});
@@ -16402,6 +16403,11 @@ let rstArm=false;
 async function resetTestAcct(){const m=$("rstMsg"),b=$("rstBtn");if(!TEST_ACCTS.includes(ACCT))return;if(!rstArm){rstArm=true;b.textContent="정말 초기화할까요? 한 번 더 누르세요";setTimeout(()=>{rstArm=false;b.textContent="초기화";},4000);return;}rstArm=false;b.disabled=true;m.textContent="초기화하는 중…";const tg=S.target;S=Object.assign(def(),{target:tg||"2027-12-01"});sanitize();saveLocal();try{localStorage.removeItem("ldq_tname_"+ACCT);}catch(e){}let ok=true;try{if(window.resetMyServer)ok=await window.resetMyServer();}catch(e){ok=false;}m.textContent=ok?"✅ 초기화했어요. 새로 시작합니다…":"⚠️ 서버 초기화에 실패했어요. 이 기기만 초기화됐어요";setTimeout(()=>location.reload(),1200);}
 document.addEventListener("click",e=>{if(e.target&&e.target.closest&&e.target.closest("#rstBtn"))resetTestAcct();});
 function initReset(){const b=$("rstBox");if(b)b.classList.toggle("hidden",!TEST_ACCTS.includes(ACCT));}
+function claimSupply(){if(B||S.openSupply)return;S.openSupply=Date.now();S.balls=(S.balls||0)+100;addItem("potion",30);save();hud();try{renderShop();renderAll();}catch(e){}try{sfx.get();}catch(e){}
+ const o=document.createElement("div");o.id="supplyOv";o.style.cssText="position:fixed;inset:0;z-index:9500;background:rgba(10,12,30,.72);display:flex;align-items:center;justify-content:center;padding:16px";
+ o.innerHTML='<div class="box stack" style="max-width:360px;width:100%;background:var(--surface);text-align:center;align-items:center"><div class="eyebrow">OPEN EVENT</div><div style="font-size:54px;line-height:1.1">📦</div><h2 style="font-size:20px">오픈 기념 보급품 도착!</h2><div class="stack" style="gap:4px"><b>몬스터볼 +100개</b><b>상처약 +30개</b></div><div class="small muted">계정당 한 번만 받을 수 있는 선물이에요.</div><button class="btn primary" id="supplyOk">받았어요!</button></div>';
+ document.body.appendChild(o);$("supplyOk").onclick=()=>o.remove();}
+document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("#toSupply"))claimSupply();});
 function pikaOverlay(mode){const T={new:["✨ 오픈 기념 선물, 이로치 피카츄가 왔어요!","레벨 5 이로치 피카츄를 받았어요. 파티에 합류했어요."],up:["✨ 피카츄가 이로치로 빛나요!","이미 갖고 있던 피카츄가 이로치로 바뀌었어요."],dup:["이로치 피카츄를 이미 갖고 있네요!","대신 코인 300개를 드렸어요."]}[mode];
   const o=document.createElement("div");o.id="pikaOv";o.style.cssText="position:fixed;inset:0;z-index:9500;background:rgba(10,12,30,.72);display:flex;align-items:center;justify-content:center;padding:16px";
   o.innerHTML='<div class="box stack" style="max-width:380px;width:100%;background:var(--surface);text-align:center;align-items:center"><div class="eyebrow">OPEN EVENT</div><canvas id="pikaCv" width="240" height="190"></canvas><h2 style="font-size:20px">'+T[0]+'</h2><div class="small muted">'+T[1]+' 계정당 한 번만 받을 수 있는 선물이에요.</div><button class="btn primary" id="pikaOk">좋아요!</button></div>';
@@ -16558,7 +16564,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
   if(Array.isArray(R.missed)){L.missed=Array.from(new Set((L.missed||[]).concat(R.missed))).filter(n=>!L.caught[n]);}
   if(remoteWins){for(const k of ["coins","balls","superBalls","repelSteps","lureSteps","lastLogin","loginStreak","party","partner","evoItems","custom","weak","seenQ","flags","stats","writes","talkSeen","cards","look"])if(R[k]!==undefined)L[k]=clone(R[k]);}
   if(R.tname&&!L.tname)L.tname=R.tname;
-  if(R.openPika&&!L.openPika)L.openPika=R.openPika;if(R.comp1&&!L.comp1)L.comp1=R.comp1;if(R.openTen&&!L.openTen)L.openTen=R.openTen;
+  if(R.openPika&&!L.openPika)L.openPika=R.openPika;if(R.comp1&&!L.comp1)L.comp1=R.comp1;if(R.openTen&&!L.openTen)L.openTen=R.openTen;if(R.openSupply&&!L.openSupply)L.openSupply=R.openSupply;
   if(!Array.isArray(L.party)||!L.party.length)L.party=clone(R.party||[]);
  }
  async function initDbInner(){
@@ -16603,7 +16609,7 @@ try{document.fonts&&document.fonts.load("10px pkmnems");}catch(e){}
 })();
 </script><script>
 (function(){
- const BUILD_ID="20261021212111";
+ const BUILD_ID="20261021212348";
  window.LDQ_BUILD=BUILD_ID;
  let shown=false;
  function banner(){
